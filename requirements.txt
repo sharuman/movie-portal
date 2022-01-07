@@ -1,0 +1,12 @@
+Django==3.2.8
+psycopg2==2.8.4
+psycopg2-binary==2.9.3
+
+# tests
+pytest==6.2.5
+pytest-sugar==0.9.4
+pytest-django==4.1.0
+
+# lint
+black==20.8b1
+
