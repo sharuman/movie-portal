@@ -1,48 +1,37 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 # Create your models here.
 
 class Persona(models.Model):
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    @property
-    def full_name(self):
-        "Returns the persona's full name."
-        return '%s %s' % (self.first_name, self.last_name)
+    
+    # Persona is representative of both, actors/actresses and directors
+    
+    full_name = models.CharField(max_length=200)
+    
 
 class Movie(models.Model):
-    title = models.CharField(max_length=255)
-    title_original = models.CharField(max_length=255)
 
-    class MovieFormat(models.TextChoices):
-        COLOR = 'color',
-        BLACK_AND_WHITE = 'b/n'
+    # Represents all the movie details
 
-    format = models.CharField(
-        max_length=5,
-        choices=MovieFormat.choices,
-        default=MovieFormat.COLOR
-    )
-    slug = models.CharField(max_length=255, primary_key=True)
-    running_time = models.IntegerField()
-    trailer = models.TextField()
-    plot = models.TextField()
+    movie_title = models.CharField(max_length=300)
+    movie_length = models.FloatField()
+    movie_genre = models.CharField(max_length=300)
+    star_rating = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(5.0)], blank=True)
     released_on = models.DateField()
-    created_at = models.DateTimeField()
+    added_on = models.DateTimeField(auto_now_add=True)
+    director = models.ManyToManyField(Persona, related_name='movie_director')
+    actor = models.ManyToManyField(Persona, related_name='movie_actor')
+    movie_trailer = models.URLField(max_length=500, blank=True, default=None)
+    movie_plot = models.TextField()
 
-    director = models.ManyToManyField(
-        Persona,
-        related_name='movie_directors',
-    )
-    actors = models.ManyToManyField(
-        Persona,
-        related_name='movie_actors'
-    )
+    
+    # class Meta:
+    #     ordering = ["title"]
+    # format = models.CharField(
+    #     max_length=5,
+    #     choices=MovieFormat.choices,
+    #     default=MovieFormat.COLOR
+    # )
+   
 
-    class Meta:
-        ordering = ["title"]
-
-    # TODO: Can this work not only with movies?
-    # If yes, it should be implemented in a separate Django app (module)
-    def related_movies(self):
-        pass
