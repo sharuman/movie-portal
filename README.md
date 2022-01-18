@@ -21,3 +21,19 @@ Rebuilding and restarting `postgres` (alternatively, you can run `rebuildPostgre
 1. `docker-compose stop postgres`
 2. `docker compose build postgres`
 3. `docker compose restart postgres`
+
+## Run
+Once the docker containers are running you must follow the steps below:
+1. `docker exec django-container python manage.py migrate`
+2. `docker exec -it django-container python manage.py createsuperuser`
+3. Backoffice:
+    - url: http://localhost:8000/admin/
+    - credentials: use the username and password set in the previous step
+
+
+### Django Help
+#### Get rid of app related tables and start over again:
+1. `docker exec django-container python manage.py migrate your_app zero` will drop all the tables related to _your_app_ from the database
+2. remove the migration(s) in the `migrations` directory
+3. `docker exec django-container python manage.py makemigrations your_app` generate the migrations
+4. `docker exec django-container python manage.py migrate your_app` apply the migrations to the database
