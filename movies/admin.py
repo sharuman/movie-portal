@@ -15,6 +15,9 @@ class MovieAdmin(admin.ModelAdmin):
     # readonly_fields = ('slug',)
     # exclude=('slug',)
 
+class PersonaAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'created_at', 'updated_at')
+
 class GenreAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug', 'created_at', 'updated_at')
     prepopulated_fields = {"slug": ("name",)}
@@ -29,6 +32,6 @@ class RatingAdmin(admin.ModelAdmin):
 # Model Registration
 # ------------------   
 admin.site.register(Movie, MovieAdmin)
-admin.site.register(Persona)
+admin.site.register(Persona, PersonaAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Rating, RatingAdmin)
