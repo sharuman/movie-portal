@@ -1,67 +1,71 @@
-from random import choices
-from turtle import update
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
 
-# Create your models here.
-
-class Persona(models.Model):
-    
-    # Persona is representative of both, actors/actresses and directors
-    
-    TYPE_CHOICES = (
-        (0, 'Director'),
-        (1, 'Actor'),
-    )
-
-    full_name = models.CharField(max_length=200)
-    type = models.IntegerField(choices=TYPE_CHOICES)
+# -------------
+# PERSONA MODEL
+# -------------
+# Persona represents both, actors/actresses and directors
+class Persona(models.Model):    
+    full_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Needed to display Persona name in the drop-down list when setting movie-persona 
+    # relationships in the backoffice 
+    def __str__(self):
+       return self.full_name  
 
+# -----------
+# GENRE MODEL
+# -----------
 class Genre(models.Model):
-    
-    # Genre is representative of the type of the movie
-    
-    name = models.CharField(max_length=200, primary_key=True)
+    name = models.CharField(max_length=254)
+    slug = models.SlugField(max_length=254, unique=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    g_slug = models.SlugField(max_length=254, unique=True)
 
+    # Needed to display Genre name in the drop-down list when setting movie-genre 
+    # relationships in the backoffice     
     def __str__(self):
        return self.name    
 
-
+# -----------
+# MOVIE MODEL
+# -----------
 class Movie(models.Model):
+    title = models.CharField(max_length=254)
+    slug = models.SlugField(max_length=254, unique=True)
+    length = models.FloatField(blank=True, null=True)
+    released_on = models.DateField(blank=True, null=True)
+    trailer = models.URLField(max_length=254, blank=True, default=None, null=True)
+    plot = models.TextField(blank=True, null=True)
+    # Relationships
+    directors = models.ManyToManyField(Persona, related_name='directors')
+    actors = models.ManyToManyField(Persona, related_name='actors')
+    genres = models.ManyToManyField(Genre, related_name='genres')
+    ratings = models.ManyToManyField(User, through='Rating', blank=True)
 
-    # Represents all the movie details
-
-    title = models.CharField(max_length=300)
-    m_slug = models.SlugField(max_length=254, unique=True)
-    length = models.FloatField()
-    viewer_rating = models.ManyToManyField(User, through='Rating', blank=True)
-    released_on = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    director = models.ManyToManyField(Persona, related_name='movie_director')
-    actor = models.ManyToManyField(Persona, related_name='movie_actor')
-    genre = models.ManyToManyField(Genre, related_name='movie_genre')
-    trailer = models.URLField(max_length=500, blank=True, default=None)
-    plot = models.TextField()
 
-    
-    class Meta:
-        ordering = ["title"]
-    
+    # Needed to display Movie title in the Ratings section of the backoffice   
     def __str__(self):
        return self.title
-   
+
+# ------------
+# RATING MODEL
+# ------------  
 class Rating(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    star_rating = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(5.0)],)
 
+    class Meta:
+        # A user can rate a movie only once
+        unique_together = (('movie', 'user'))
+        
