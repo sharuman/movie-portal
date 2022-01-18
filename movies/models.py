@@ -21,7 +21,7 @@ class Persona(models.Model):
 # -----------
 class Genre(models.Model):
     name = models.CharField(max_length=254)
-    slug = models.SlugField(max_length=254, unique=True, blank=True)
+    slug = models.SlugField(max_length=254, unique=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,9 +37,9 @@ class Genre(models.Model):
 class Movie(models.Model):
     title = models.CharField(max_length=254)
     slug = models.SlugField(max_length=254, unique=True)
-    length = models.FloatField(blank=True, null=True)
+    length = models.FloatField(default=0.0, blank=True)
     released_on = models.DateField(blank=True, null=True)
-    trailer = models.URLField(max_length=254, blank=True, default=None, null=True)
+    trailer = models.URLField(max_length=254, blank=True, default=None)
     plot = models.TextField(blank=True, null=True)
     # Relationships
     directors = models.ManyToManyField(Persona, related_name='directors')
