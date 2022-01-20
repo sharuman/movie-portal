@@ -1,7 +1,9 @@
 # ASE Movie Catalogue Project
 ## Dockerized Setup
 1. Install Docker
-2. Go to the root folder of the project and run `docker compose up`. Alternatively, just execute the `startDockerized.bat` file in the root folder (only valid for Windows OS). This will create and start 3 different services, one for postgres, one for django (which will run django's migrate and runserver commands) and one for pgdmin.
+2. `cp .env.example .env`
+3. Set the variables in `.env` file accordingly
+4. Go to the root folder of the project and run `docker compose up`. Alternatively, just execute the `startDockerized.bat` file in the root folder (only valid for Windows OS). This will create and start 3 different services, one for postgres, one for django (which will run django's migrate and runserver commands) and one for pgdmin.
 
 ### Connections
 Complete connection values can be found in the `docker-compose.yml` file.
@@ -13,12 +15,12 @@ Complete connection values can be found in the `docker-compose.yml` file.
 ### Docker services rebuild and restart
 
 Rebuilding and restarting `django` (alternatively, you can run `rebuildDjangoService.bat` which will run the aforementioned commands):
-1. `docker-compose stop django`
+1. `docker compose stop django`
 2. `docker compose build django`
 3. `docker compose restart django`
 
 Rebuilding and restarting `postgres` (alternatively, you can run `rebuildPostgresService.bat` which will run the following commands):
-1. `docker-compose stop postgres`
+1. `docker compose stop postgres`
 2. `docker compose build postgres`
 3. `docker compose restart postgres`
 
