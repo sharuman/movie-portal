@@ -1,0 +1,117 @@
+{% extends "./../base.html" %}
+
+
+{% block content %}
+
+<style>
+    .divider:after,
+.divider:before {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #eee;
+}
+.h-custom {
+  height: calc(100% - 73px);
+}
+@media (max-width: 450px) {
+  .h-custom {
+    height: 100%;
+  }
+}
+</style>
+<body>
+    <br /><br /><br /><br />
+    <section class="vh-100">
+        <div class="container-fluid h-custom">
+            <div class="row d-flex justify-content-center align-items-center">
+                <div class="col-md-9 col-lg-6 col-xl-5">
+                    <img src="https://image.freepik.com/free-vector/doodle-entertainment-cinematography-movie-film-video-cinema-icons_1284-52018.jpg"
+                        class="img-fluid" alt="Sample image">
+                </div>
+                <div class="col-sm-6">
+                        
+                        <!-- <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1"> -->
+
+                            <form method="post">
+                                <div>
+                                    <p class="lead fw-bold mb-2">Sign in</p>
+                                </div>
+                               
+                                {% csrf_token %}
+                                <div class=" form-outline mb-3">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" class="form-control" name="username" placeholder="Username">
+                                    
+                                </div>
+                                <div class="form-outline mb-3">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" class="form-control" name="="password placeholder="Enter password">
+                                </div>
+                                
+                                <br/>
+                                <div>
+                                    <button class="btn btn-primary" style="padding-left: 3rem; padding-right: 3rem;"
+                                        type="submit">Login</button>
+                                    <p class="small fw-bold mt-2 pt-2">Don't have an account? <a href="#!"
+                                            class="link-primary">Sign up</a></p>
+
+                                </div>
+                            </form>
+                        </div>
+                        
+            </div>
+        </div>
+        <br />
+    </section>
+    
+    
+        <div class="fixed-bottom" style='border-bottom:40px solid rgb(0, 0, 0);'></div>
+        
+</body>
+
+<section class="vh-100">
+    <div class="container-fluid h-custom">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+        <div class="col-md-9 col-lg-6 col-xl-5">
+          <img src="https://image.freepik.com/free-vector/doodle-entertainment-cinematography-movie-film-video-cinema-icons_1284-52018.jpg" class="img-fluid"
+            alt="Sample image">
+        </div>
+        <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+          <form>
+            <div class="d-flex flex-row align-items-center justify-content-center justify-content-lg-start">
+              <p class="lead fw-normal mb-0 me-3">Sign in</p>   
+            </div>
+            {% csrf_token %}
+
+            
+            <!-- Email input -->
+            <div class="form-outline mb-4">
+              <input type="email" id="form3Example3" class="form-control form-control-lg"
+                placeholder="Enter a valid email address" />
+              <label class="form-label" for="form3Example3">Username</label>
+            </div>
+  
+            <!-- Password input -->
+            <div class="form-outline mb-3">
+              <input type="password" id="form3Example4" class="form-control form-control-lg"
+                placeholder="Enter password" />
+              <label class="form-label" for="form3Example4">Password</label>
+            </div>
+  
+            
+            <div class="text-center text-lg-start mt-4 pt-2">
+              <button type="button" class="btn btn-primary btn-lg"
+                style="padding-left: 2.5rem; padding-right: 2.5rem;">Login</button>
+              <p class="small fw-bold mt-2 pt-1 mb-0">Don't have an account? <a href="#!"
+                  class="link-primary">Sign Up</a></p>
+            </div>
+  
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex flex-column flex-md-row text-center text-md-start justify-content-between py-4 px-4 px-xl-5 bg-primary"></div>
+  </section>
+
+{% endblock %}
