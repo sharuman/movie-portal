@@ -2,6 +2,8 @@ Django==3.2.8
 psycopg2==2.8.4
 psycopg2-binary==2.9.3
 python-dotenv==0.19.2
+pandas==1.4.0
+tqdm==4.62.3
 
 # tests
 pytest==6.2.5

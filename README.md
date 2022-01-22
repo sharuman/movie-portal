@@ -25,12 +25,13 @@ Rebuilding and restarting `postgres` (alternatively, you can run `rebuildPostgre
 3. `docker compose restart postgres`
 
 ## Run
-Once the docker containers are running you must follow the steps below:
+Once the docker containers are running you must follow the steps below in case you do not have the database dump:
 1. `docker exec django-container python manage.py migrate`
 2. `docker exec -it django-container python manage.py createsuperuser`
 3. Backoffice:
     - url: http://localhost:8000/admin/
     - credentials: use the username and password set in the previous step
+4. `docker exec django-container python manage.py import_movies`
 
 
 ### Django Help
