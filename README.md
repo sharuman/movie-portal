@@ -40,3 +40,4 @@ Once the docker containers are running you must follow the steps below in case y
 2. remove the migration(s) in the `migrations` directory
 3. `docker exec django-container python manage.py makemigrations your_app` generate the migrations
 4. `docker exec django-container python manage.py migrate your_app` apply the migrations to the database
+#Removing all data from tables, but keeping it: docker exec django-container bash -c "echo yes| python manage.py flush" -> first pipe yes into command (for confirmation of the command), then flush database

@@ -4,6 +4,7 @@ psycopg2-binary==2.9.3
 python-dotenv==0.19.2
 pandas==1.4.0
 tqdm==4.62.3
+python-slugify==5.0.2
 
 # tests
 pytest==6.2.5
