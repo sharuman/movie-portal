@@ -21,7 +21,6 @@ from movies import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
-    # path('', views.home, name='home'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('accounts/', include('django.contrib.auth.urls')),
 ]
