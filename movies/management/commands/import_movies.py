@@ -25,8 +25,8 @@ class Command(BaseCommand):
         genre_aslist = eval(genres)
         return [g["name"] for g in genre_aslist if g["department"] == "Directing"]
 
-    def unique_dict_from_list_col(self,list_col)->list[str]:
-        return dict.fromkeys(itertools.chain.from_iterable(list_col), None)
+    def unique_list_from_list_col(self,list_col)->list[str]:
+        return list(set(itertools.chain.from_iterable(list_col)))
         # unique_dict=dict()
         # i=0
         # for val in unique_values:
@@ -51,61 +51,100 @@ class Command(BaseCommand):
     #Fills EMTPY Movie database
     def fill_movies(self)->None:
         # Get movies dataframe
-
         filePath=Path(__file__).parent.resolve()
         moviePath = os.path.join(filePath, "movies_metadata.csv.xz")
         creditsPath = os.path.join(filePath, "credits.csv.xz")
 
+
         movies=self.get_movies_df(moviePath,creditsPath)
 
         # Get unique dicts multi value cell column cells
-        genres = self.unique_dict_from_list_col(movies["genres"])
-        casts = self.unique_dict_from_list_col(movies["cast"])
-        crews = self.unique_dict_from_list_col(movies["crew"])
+        genres = self.unique_list_from_list_col(movies["genres"])
+        casts = self.unique_list_from_list_col(movies["cast"])
+        crews = self.unique_list_from_list_col(movies["crew"])
 
-        self.assign_genre_objects(genres)
-        self.assign_persona_objetcs(casts,crews)
+        genre_objects=self.create_genre_objects(genres)
+        casts_objects=self.create_persona_objects(casts)
+        crews_objects=self.create_persona_objects(crews)
 
-        self.add_genre_elements_to_db(list(genres.values()))
-        self.add_persona_elements_to_db(list(casts.values()),list(crews.values()))
+        genre_objects2=self.add_genre_elements_to_db(genre_objects)
+        casts_objects2,crews_objects2=self.add_persona_elements_to_db(casts_objects,crews_objects)
 
-        movie_objects=self.create_movie_objects(movies,genres,casts,crews)
+        genres=self.dictify(genres,genre_objects2)
+        casts=self.dictify(casts,casts_objects2)
+        crews=self.dictify(crews,crews_objects2)
 
+        movie_objects=self.create_movie_objects(movies)
 
-        self.add_movies_to_db(movie_objects)
+        movie_objects=self.add_movies_to_db(movie_objects)
+
+        self.add_relationships(movies,movie_objects,genres,casts,crews)
+
 
         #Genre.objects.save()
 
-    def add_movies_to_db(self,movies:list[Movie]):
-        try:
-            Movie.objects.bulk_create(movies)
-        except IntegrityError:
-            logger.warning("Tried to insert values into movies that are already there")
+    def dictify(self,keys:list,vals:list):#Combine 2 lists with the same length and a fitting order together
+        obj_dict = dict()
+        for i in range(len(keys)):
+            obj_dict[keys[i]] = vals[i]
 
-    def create_movie_objects(self,movies:pd.DataFrame,genres:dict[str,Genre],casts:[str,Genre],crews:[str,Genre])->list[Movie]:
-        #TODO: add ratings and trailer later
-        movie_objects=list()
-        for index,row in movies.iterrows():
-            #TODO: add trailer later
+        return obj_dict
 
-            genre_objs=list()
-            actor_objs=list()
-            director_objs=list()
+    def add_relationships(self,movies,movie_objects:list[Movie],genres:dict[str,Genre],casts:[str,Persona],crews:[str,Persona]):
+
+
+
+        genre_relations=list()
+        actor_relations=list()
+        director_relations=list()
+        i = 0
+        for index, row in movies.iterrows():
+            movie = movie_objects[i]
+
 
             for genre in row["genres"]:
-                genre_objs.append(genres[genre])
-            for director in row["crew"]:
-                director_objs.append(crews[director])
-            for actor in row["cast"]:
-                actor_objs.append(casts[actor])
+                genre_relations.append(movie.genres.through(genre_id=genres[genre].id,movie_id=movie.id))
 
-            movie=Movie(title=row["title"],slug=slugify(row["title"]),length=row["runtime"],released_on=row["release_date"],trailer="",plot=row["overview"],directors=director_objs,actors=actor_objs,genres=genre_objs,ratings=None)
-            movie_objects.append()
+            for cast in row["cast"]:
+                actor_relations.append(movie.actors.through(persona_id=casts[cast].id, movie_id=movie.id))
+
+            for director in row["crew"]:
+                director_relations.append(movie.directors.through(persona_id=crews[director].id, movie_id=movie.id))
+
+            i += 1
+
+
+        logger.info('Adding movie relationships')
+        Movie.genres.through.objects.bulk_create(genre_relations)
+        Movie.actors.through.objects.bulk_create(actor_relations)
+        Movie.directors.through.objects.bulk_create(director_relations)
+
+
+    def add_movies_to_db(self,movies:list[Movie])->list[Movie]:
+        try:
+            logger.info('Adding movies')
+            return Movie.objects.bulk_create(movies)
+        except IntegrityError:
+            logger.warning("Tried to insert values into movies that are already there")
+            return list()
+
+    def create_movie_objects(self,movies:pd.DataFrame)->list[Movie]:
+        #TODO: add ratings and trailer later, maybe split class up so we don't do too much at once
+
+        movie_objects=list()
+        for index,row in movies.iterrows():
+
+            #TODO: add trailer later
+
+            movie = Movie(id=row["id"],title=row["title"], slug=slugify(row["title"]), length=row["runtime"],
+                          released_on=row["release_date"], trailer="", plot=row["overview"])
+
+            movie_objects.append(movie)
         return movie_objects
 
 
     def get_movies_df(self,moviePath,creditsPath)->pd.DataFrame:
-        movies = pd.read_csv(moviePath, encoding="utf8", infer_datetime_format=True)
+        movies = pd.read_csv(moviePath, encoding="utf8", infer_datetime_format=True).sample(20)#TODO: remove sample later
         movies["genres"] = movies["genres"].apply(self.str_dict_to_list)
 
         # get credits dataframe (more info on cast/directors)
@@ -118,39 +157,42 @@ class Command(BaseCommand):
         movies["crew"] = movies["crew"].apply(self.str_dict_to_director_list)
         return movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime", "vote_average"]]
 
-    def assign_genre_objects(self,genres:dict[str,Genre])->None:
+    def create_genre_objects(self,genres:list[str])->list[Genre]:
         # Add genres to database
         genre_objs = list()
-        for genre in genres.keys():
+        for genre in genres:
             obj = Genre(name=genre,slug=slugify(genre))
             genre_objs.append(obj)
-            genres[genre] = obj
+        return genre_objs
 
-    def add_genre_elements_to_db(self,genres:list[Genre])->None:
+    def add_genre_elements_to_db(self,genres:list[Genre])->list[Genre]:
         try:
-            Genre.objects.bulk_create(genres)
+            logger.info('Adding genres')
+            return Genre.objects.bulk_create(genres)
         except IntegrityError:
             logger.warning("Tried to insert values into genre that are already there")
-    def add_persona_elements_to_db(self,casts:list[Persona],crews:list[Persona])->None:
+            return list()
+
+    def add_persona_elements_to_db(self,casts:list[Persona],crews:list[Persona])->[list[Persona],list[Persona]]:
         try:
-            Persona.objects.bulk_create(casts+crews)
+            logger.info('Adding cast and crew')
+            newCast= Persona.objects.bulk_create(casts)
+            newCrew=Persona.objects.bulk_create(crews)
+            return newCast,newCrew
         except IntegrityError:
             logger.warning("Tried to insert values into personas that are already there")
+            return [list(),list()]
 
-    def assign_persona_objetcs(self,casts:dict[str,Persona],crews:dict[str,Persona])->None:
+    def create_persona_objects(self,persona:list[str])->list[Persona]:
+
         persona_objs=list()
-        for person in casts.keys():
+        for person in persona:
             obj = Persona(full_name=person)
             persona_objs.append(obj)
-            casts[person] = obj
 
-        for person in crews.keys():
-            obj = Persona(full_name=person)
-            persona_objs.append(obj)
-            crews[person] = obj
+        return persona_objs
 
 
-# python manage.py import_movies
 
 
 
