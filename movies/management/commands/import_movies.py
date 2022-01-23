@@ -17,13 +17,13 @@ class Command(BaseCommand):
 
     help = 'Import movies and the main relationships'
 
-    def str_dict_to_list(self,genres)->list[str]:
+    def str_dict_to_unique_list(self,genres)->list[str]:
         genre_aslist = eval(genres)
-        return [g["name"] for g in genre_aslist]
+        return list(set(g["name"] for g in genre_aslist))
 
-    def str_dict_to_director_list(self,genres)->list[str]:
+    def str_dict_to_unique_director_list(self,genres)->list[str]:
         genre_aslist = eval(genres)
-        return [g["name"] for g in genre_aslist if g["department"] == "Directing"]
+        return list(set(g["name"] for g in genre_aslist if g["department"] == "Directing"))
 
     def unique_list_from_list_col(self,list_col)->list[str]:
         return list(set(itertools.chain.from_iterable(list_col)))
@@ -134,8 +134,6 @@ class Command(BaseCommand):
         movie_objects=list()
         for index,row in movies.iterrows():
 
-            #TODO: add trailer later
-
             movie = Movie(id=row["id"],title=row["title"], slug=slugify(row["title"]), length=row["runtime"],
                           released_on=row["release_date"], trailer="", plot=row["overview"])
 
@@ -145,7 +143,7 @@ class Command(BaseCommand):
 
     def get_movies_df(self,moviePath,creditsPath)->pd.DataFrame:
         movies = pd.read_csv(moviePath, encoding="utf8", infer_datetime_format=True).sample(20)#TODO: remove sample later
-        movies["genres"] = movies["genres"].apply(self.str_dict_to_list)
+        movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
 
         # get credits dataframe (more info on cast/directors)
         credits = pd.read_csv(creditsPath, encoding="utf8")
@@ -153,8 +151,8 @@ class Command(BaseCommand):
         # merge information
         movies = pd.merge(movies, credits, on="id")
 
-        movies["cast"] = movies["cast"].apply(self.str_dict_to_list)
-        movies["crew"] = movies["crew"].apply(self.str_dict_to_director_list)
+        movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
+        movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
         return movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime", "vote_average"]]
 
     def create_genre_objects(self,genres:list[str])->list[Genre]:
