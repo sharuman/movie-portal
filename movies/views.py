@@ -15,10 +15,6 @@ def index(request):
     now = datetime.datetime.now()
     return render(request, 'index.html', {'now': now})
 
-# def home(request):
-#     return render(request, 'home.html')
-
-
 class SignUpView(View):
 
     form_class = SignUpForm
