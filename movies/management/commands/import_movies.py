@@ -33,15 +33,9 @@ class Command(BaseCommand):
         creditsPath = Path(os.getenv('CREDITS_PATH')).expanduser()
 
         logger.info('Import started')
+        self.stdout.write(self.style.NOTICE('Import started'))
 
-        self.fill_movies(moviesPath, creditsPath)
-
-        logger.info('Import completed')
-        self.stdout.write(self.style.SUCCESS('Import completed'))
-
-    #Fills EMTPY Movie database
-    def fill_movies(self, moviePath: str, creditsPath: str)->None:
-        movies=self.get_movies_df(moviePath,creditsPath)
+        movies = self.get_movies_df(moviesPath, creditsPath)
 
         # Get unique dicts multi value cell column cells
         genres = self.unique_list_from_list_col(movies["genres"])
@@ -65,6 +59,9 @@ class Command(BaseCommand):
 
         self.add_relationships(movies,movie_objects,genres,casts,crews)
 
+        logger.info('Import completed')
+        self.stdout.write(self.style.SUCCESS('Import completed'))
+        
 
     def dictify(self,keys:list,vals:list):#Combine 2 lists with the same length and a fitting order together
         obj_dict = dict()
@@ -117,17 +114,34 @@ class Command(BaseCommand):
 
 
     def get_movies_df(self,moviePath,creditsPath)->pd.DataFrame:
-        movies = pd.read_csv(moviePath, encoding="utf8", infer_datetime_format=True).sample(20)#TODO: remove sample later
-        movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
-
+        movies = pd.read_csv(moviePath,
+            usecols=['id', 'title', 'genres', 'overview', 'tagline', 'release_date', 'runtime'],
+            low_memory = False, encoding="utf8",
+            infer_datetime_format=True)
+        #TODO: remove sample later
+        movies = movies.sample(20)
+        
         # get credits dataframe (more info on cast/directors)
         credits = pd.read_csv(creditsPath, encoding="utf8")
-        # merge information
+
+        # There is an illegal value in id column of movies dataframe which we need to clean:
+        # if '1997-08-20' in movies['id'].unique():
+        # print('BUSTED!')
+        movies = movies[~(movies['id'] == '1997-08-20')]
+        # The dataset has dirty values as shown above which causes merge and join on id to fail. 
+        # A fix is to cast id in credits to string.
+        # This could have been done while reading the CSV by using
+        # dtype={'id': str}. For clarity we have chosen to do this later:
+        credits['id'] = credits['id'].astype(str)
+        
+        movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
+
         movies = pd.merge(movies, credits, on="id")
 
         movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
         movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
-        return movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime", "vote_average"]]
+
+        return movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime"]]
 
     def create_genre_objects(self,genres:list[str])->list[Genre]:
         genre_objs = list()
