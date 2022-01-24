@@ -50,7 +50,7 @@
                     <a class="nav-link" href="#"><span class="fas fa-user"></span> Sign Up</a>
                 </li>
                 <li>
-                    <a class="nav-link" href="#"><span class="fas fa-sign-in-alt"></span> Login</a>
+                    <a class="nav-link" href="{% url 'login' %}"><span class="fas fa-sign-in-alt"></span> Login</a>
                 </li>
             </ul>
             <!-- Right elements -->
@@ -58,7 +58,7 @@
 
     </nav>
 
-    {% block body %}
+    {% block content %}
 
 
     {% endblock %}
