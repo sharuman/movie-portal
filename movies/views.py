@@ -1,7 +1,4 @@
-from contextlib import redirect_stdout
-from multiprocessing import AuthenticationError
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 import datetime
 from django.views import View
 
