@@ -64,21 +64,9 @@ class Command(BaseCommand):
         
         # get credits dataframe (more info on cast/directors)
         credits = pd.read_csv(creditsPath, encoding="utf8")
-
-        # There is an illegal value in id column of movies dataframe which we need to clean:
-        # if '1997-08-20' in movies['id'].unique():
-        # print('BUSTED!')
-        movies = movies[~(movies['id'] == '1997-08-20')]
-        # The dataset has dirty values as shown above which causes merge and join on id to fail. 
-        # A fix is to cast id in credits to string.
-        # This could have been done while reading the CSV by using
-        # dtype={'id': str}. For clarity we have chosen to do this later:
-        credits['id'] = credits['id'].astype(str)
         
-        movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
-
         movies = pd.merge(movies, credits, on="id")
-
+        movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
         movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
         movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
 
