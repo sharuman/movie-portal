@@ -22,9 +22,9 @@ jobs:
       postgres:
         image: postgres
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_USER: ${{ secrets.DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.DB_DATABASE }}
         ports:
           - 5432:5432
         options: >-
@@ -47,8 +47,24 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run migrations
+      env:
+        DB_ENGINE: ${{ secrets.DB_ENGINE }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_HOSTNAME: ${{ secrets.DB_HOSTNAME }}
+        DB_DATABASE: ${{ secrets.DB_DATABASE }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: python manage.py migrate
     - name: Run tests
+      env:
+        DB_ENGINE: ${{ secrets.DB_ENGINE }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
+        DB_HOSTNAME: ${{ secrets.DB_HOSTNAME }}
+        DB_DATABASE: ${{ secrets.DB_DATABASE }}
+        DB_USERNAME: ${{ secrets.DB_USERNAME }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: |
         pytest
     - name: Run lint with black
