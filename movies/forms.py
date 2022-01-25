@@ -5,11 +5,18 @@ from django import forms
 
 
 class SignUpForm(UserCreationForm):
-    full_name = forms.CharField(
-        max_length=200,
+    first_name = forms.CharField(
+        max_length=50,
         required=True,
-        widget=forms.TextInput(attrs={'placeholder': 'Full Name', 'class': 'form-control'}),
-        label='Full name'
+        widget=forms.TextInput(attrs={'placeholder': 'First Name', 'class': 'form-control'}),
+        label='First name'
+    )
+
+    last_name = forms.CharField(
+        max_length=50,
+        required=True,
+        widget=forms.TextInput(attrs={'placeholder': 'Last Name', 'class': 'form-control'}),
+        label='Last name'
     )
 
     username = forms.CharField(
@@ -20,6 +27,7 @@ class SignUpForm(UserCreationForm):
     )
 
     email = forms.EmailField(
+        max_length=50,
         required=True,
         widget=forms.EmailInput(attrs={'placeholder': 'E-mail Address', 'class': 'form-control'}),
         label='E-mail'
@@ -36,11 +44,12 @@ class SignUpForm(UserCreationForm):
         max_length=50,
         required=True,
         widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Entered Password', 'class': 'form-control'}),
-        label="Confirmation password",
+        label="Confirmation password"
     )
+
+    USERNAME_FIELD = 'email'
 
     class Meta:
         # built-in User model
         model = User
-        fields = ['full_name', 'username', 'email',
-                  'password1', 'password2']
+        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
