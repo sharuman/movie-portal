@@ -13,12 +13,5 @@ def index(request):
 
 
 
-
-
-
-
-
-
-
 def get_features_movies()->list[Movie]:
-    return Movie.objects.all()[:5]
+    return Movie.objects.all()[:6]
