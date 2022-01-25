@@ -20,18 +20,20 @@ class SignUpForm(UserCreationForm):
                              widget=forms.EmailInput(attrs={'placeholder': 'E-mail Address', 'class': 'form-control',
                                                            }))
 
-    password = forms.CharField(max_length=50, required=True,
+    password1 = forms.CharField(max_length=50, required=True,
                                widget=forms.PasswordInput(attrs={'placeholder': 'Password', 'class': 'form-control',
                                                                  }))
 
-    password_confirmation = forms.CharField(max_length=50,
+    password2 = forms.CharField(max_length=50,
                                             required=True,
                                             widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Entered Password',
                                                                               'class': 'form-control',
                                                                               }))
-
+    
     class Meta:
         # built-in User model
         model = User
         fields = ['full_name', 'username', 'email',
-                  'password', 'password_confirmation']
+                  'password1', 'password2']
+
+    
