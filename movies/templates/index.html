@@ -8,19 +8,39 @@
 
 <main role="main">
     <section class="jumbotron text-center">
-        <div class="container">
-            <h1 class="jumbotron-heading">The Movie Catalogue</h1>
-            <p class="lead text-muted">Something short and leading about the collection below — its contents, the creator,
-                etc. Make it short and sweet, but not too short so folks don't simply skip over it entirely.</p>
-            <p>
-                <a href="#" class="btn btn-primary my-2">Main call to action</a>
-                <a href="#" class="btn btn-secondary my-2">Secondary action</a>
-            </p>
+        <div>
+            {% if featured_movie_list %}
+                {% for movie in featured_movie_list %}
+                    <div  style="float:left;background-color:black;height:100%;width:20%"><a href="/movie/{{movie.slug}}/">{{movie.title}}</a></div>
+                {% endfor %}
+            {% else %}
+                <p>No movies found!</p>
+            {% endif %}
+        </div>
+    </section>
+    <section class="jumbotron text-center">
+        <div>
+            {% if featured_movie_list %}
+                {% for movie in featured_movie_list %}
+                    <div  style="float:left;background-color:grey;height:100%;width:20%"><a href="/movie/{{movie.slug}}/">{{movie.title}}</a></div>
+                {% endfor %}
+            {% else %}
+                <p>No movies found!</p>
+            {% endif %}
+        </div>
+    </section>
+    <section class="jumbotron text-center">
+        <div>
+            {% if featured_movie_list %}
+                {% for movie in featured_movie_list %}
+                    <div  style="float:left;background-color:grey;height:100%;width:20%"><a href="/movie/{{movie.slug}}/">{{movie.title}}</a></div>
+                {% endfor %}
+            {% else %}
+                <p>No movies found!</p>
+            {% endif %}
         </div>
         {{ now }}
     </section>
 </main>
-
-</div>
 
 {% endblock %}
