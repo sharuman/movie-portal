@@ -59,25 +59,28 @@ class Command(BaseCommand):
             low_memory=False,
             encoding="utf8",
             infer_datetime_format=True)
-        #TODO: remove sample later
-        movies = movies.sample(20)
-        
+        #TODO: Use full dataset in final version
+        movies = movies.head(1000)#Get first 1000 rows
+
         # get credits dataframe (more info on cast/directors)
         credits = pd.read_csv(creditsPath, encoding="utf8")
-        
+
         movies = pd.merge(movies, credits, on="id")
         movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
         movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
         movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
 
-        return movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime"]]
+        movies=movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime", "vote_average"]]
+        movies.dropna(inplace=True)#Drop all rows that have na values that matter to us
+        movies.drop_duplicates(subset=["id"],inplace=True)#Only keep movies with the right id
+        return movies
 
     def add_relationships(self, movies, movie_objects: list[Movie], genres: dict[str, Genre], casts: dict[str, Persona], crews: dict[str, Persona]):
         genre_relations = list()
         actor_relations = list()
         director_relations = list()
         i = 0
-        
+
         for _, row in movies.iterrows():
             movie = movie_objects[i]
             for genre in row["genres"]:
@@ -111,8 +114,9 @@ class Command(BaseCommand):
         try:
             logger.info('Adding genres')
             return Genre.objects.bulk_create(genres)
-        except IntegrityError:
-            logger.warning("Tried to insert values into genre that are already there")
+
+        except IntegrityError as e:
+            logger.warning("Genre insertion error: " + str(e))
             return list()
 
     # PERSONA
@@ -131,9 +135,10 @@ class Command(BaseCommand):
             newCast = Persona.objects.bulk_create(casts)
             newCrew = Persona.objects.bulk_create(crews)
             return newCast,newCrew
-        except IntegrityError:
-            logger.warning("Tried to insert values into personas that are already there")
-            return [list(),list()]
+
+        except IntegrityError as e:
+            logger.warning("Persona insertion error: " + str(e))
+            return [list(), list()]
 
     # MOVIES
     def create_movie_objects(self, movies: pd.DataFrame) -> list[Movie]:
@@ -141,10 +146,11 @@ class Command(BaseCommand):
         movie_objects=list()
 
         for _, row in movies.iterrows():
+            movie_slug=slugify(row["title"]+"-"+row["id"])#Title alone is not always unique
             movie = Movie(
                 id=row["id"],
                 title=row["title"],
-                slug=slugify(row["title"]),
+                slug=movie_slug,
                 length=row["runtime"],
                 released_on=row["release_date"],
                 trailer="",
@@ -157,8 +163,8 @@ class Command(BaseCommand):
         try:
             logger.info('Adding movies')
             return Movie.objects.bulk_create(movies)
-        except IntegrityError:
-            logger.warning("Tried to insert values into movies that are already there")
+        except IntegrityError as e:
+            logger.warning("Movie insertion error: " + str(e))
             return list()
 
     # |---------------------------------------------------------------
