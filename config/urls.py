@@ -20,5 +20,5 @@ from movies import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
-    path('signup/', views.SignUpView.as_view(), name='signup'),
+    path('signup/', views.SignUpFormView.as_view(), name='signup'),
 ]

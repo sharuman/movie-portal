@@ -1,3 +1,4 @@
+from cProfile import label
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
@@ -16,19 +17,17 @@ class SignUpForm(UserCreationForm):
                                                              }))
 
     email = forms.EmailField(required=True,
-                             widget=forms.TextInput(attrs={'placeholder': 'E-mail Address', 'class': 'form-control',
+                             widget=forms.EmailInput(attrs={'placeholder': 'E-mail Address', 'class': 'form-control',
                                                            }))
 
     password = forms.CharField(max_length=50, required=True,
                                widget=forms.PasswordInput(attrs={'placeholder': 'Password', 'class': 'form-control',
-                                                                 'data-toggle': 'password',
                                                                  }))
 
     password_confirmation = forms.CharField(max_length=50,
                                             required=True,
                                             widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Entered Password',
                                                                               'class': 'form-control',
-                                                                              'data-toggle': 'password',
                                                                               }))
 
     class Meta:

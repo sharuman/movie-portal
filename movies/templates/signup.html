@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {% block title %} Sign Up {% endblock title%}
+{% block section_title %} Sign Up {% endblock %}
 
-{% block content %}
+{% block body %}
 
-<style>
 
-</style>
 
 <body>
     <div class="form-content my-5 p-5">
@@ -22,8 +21,8 @@
                                 {% if form.errors %}
                                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
                                         <div id="form_errors">
-                                            {% for _, value in form.errors.items %}
-                                                <strong>{{ value }}</strong>
+                                            {% for field, error in form.errors.items %}
+                                                <strong>{{field}}: {{error}}</strong>
                                             {% endfor %}
                                         </div>
                                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">

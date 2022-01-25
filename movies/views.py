@@ -12,7 +12,7 @@ def index(request):
     now = datetime.datetime.now()
     return render(request, 'index.html', {'now': now})
 
-class SignUpView(View):
+class SignUpFormView(View):
 
     form_class = SignUpForm
     initial = {'key': 'value'}
