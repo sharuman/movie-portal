@@ -5,15 +5,11 @@ from django.views import View
 # importing needed, created forms from forms.py
 from .forms import SignUpForm
 
-# Create your views here.
-
-
 def index(request):
     now = datetime.datetime.now()
     return render(request, 'index.html', {'now': now})
 
 class SignUpFormView(View):
-
     form_class = SignUpForm
     initial = {'key': 'value'}
     template_name = 'signup.html'
@@ -28,6 +24,5 @@ class SignUpFormView(View):
         if form.is_valid():
             form.save()        
             return redirect(to='/')
-    
         else:
             return render(request, self.template_name, {'form': form})
