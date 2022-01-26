@@ -9,53 +9,48 @@
 
 
 
-<h1>Popular movies</h1>
+
         {% if featured_movie_list %}
 
-            <div class="container text-center my-3">
-                <h2 class="font-weight-light">Bootstrap Multi Slide Carousel</h2>
+            <div class="container-fluid my-3">
+                <h2 class="font-weight-light text-light">Popular movies</h2>
                 <div class="row mx-auto my-auto justify-content-center">
-                    <div id="recipeCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
                         <div class="carousel-inner" role="listbox">
                             {% for movie in featured_movie_list %}
                                 {% with y=forloop.counter|stringformat:"s" %}
-                                {% with template="https://via.placeholder.com/500x400/e66?text="|add:y %}
+                                {% with template="https://via.placeholder.com/370x250/7f7f7f/00000?text="|add:y %}
                                     {% if forloop.first %}
-                                        <div class="carousel-item active">
-                                            <div class="col-md-3">
+                                        <div class="carousel-item active col-5">
                                                 <div class="card">
                                                     <div class="card-img">
                                                         <img src={{template}} class="img-fluid">
                                                     </div>
                                                     <div class="card-img-overlay">{{movie.title}}</div>
                                                 </div>
-                                            </div>
                                         </div>
                                     {% else %}
-                                        <div class="carousel-item">
-                                            <div class="col-md-3">
+                                        <div class="carousel-item col-5">
                                                 <div class="card">
                                                     <div class="card-img">
                                                         <img src={{template}} class="img-fluid">
                                                     </div>
                                                     <div class="card-img-overlay">{{movie.title}}</div>
                                                 </div>
-                                            </div>
                                         </div>
 
                                     {% endif %}
                                 {% endwith %}
                                 {% endwith %}
                             {% endfor %}
-                        <a class="carousel-control-prev bg-transparent w-aut" href="#recipeCarousel" role="button" data-bs-slide="prev">
+                        <a class="carousel-control-prev bg-transparent w-aut" href="#featuredCarousel" role="button" data-bs-slide="prev">
                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         </a>
-                        <a class="carousel-control-next bg-transparent w-aut" href="#recipeCarousel" role="button" data-bs-slide="next">
+                        <a class="carousel-control-next bg-transparent w-aut" href="#featuredCarousel" role="button" data-bs-slide="next">
                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         </a>
                         </div>
                     </div>
-                    <h5 class="mt-2 fw-light">advances one slide at a time</h5>
                 </div>
             </div>
 
@@ -63,6 +58,54 @@
             <p>No featured movies found!</p>
         {% endif %}
 
+
+        {% if recommended_movie_list %}
+
+            <div class="container-fluid my-3">
+                <h2 class="font-weight-light text-light">Recommended movies</h2>
+                <div class="row mx-auto my-auto justify-content-center">
+                    <div id="recommendedCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner" role="listbox">
+                            {% for movie in featured_movie_list %}
+                                {% with y=forloop.counter|stringformat:"s" %}
+                                {% with template="https://via.placeholder.com/370x250/7f7f7f/00000?text="|add:y %}
+                                    {% if forloop.first %}
+                                        <div class="carousel-item active col-5">
+                                                <div class="card">
+                                                    <div class="card-img">
+                                                        <img src={{template}} class="img-fluid">
+                                                    </div>
+                                                    <div class="card-img-overlay">{{movie.title}}</div>
+                                                </div>
+                                        </div>
+                                    {% else %}
+                                        <div class="carousel-item col-5">
+                                                <div class="card">
+                                                    <div class="card-img">
+                                                        <img src={{template}} class="img-fluid">
+                                                    </div>
+                                                    <div class="card-img-overlay">{{movie.title}}</div>
+                                                </div>
+                                        </div>
+
+                                    {% endif %}
+                                {% endwith %}
+                                {% endwith %}
+                            {% endfor %}
+                        <a class="carousel-control-prev bg-transparent w-aut" href="#recommendedCarousel" role="button" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </a>
+                        <a class="carousel-control-next bg-transparent w-aut" href="#recommendedCarousel" role="button" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        {% else %}
+            <p>No recommended movies found!</p>
+        {% endif %}
 
 
 
