@@ -1,3 +1,6 @@
+import os
+import random
+
 from django.shortcuts import render
 import datetime
 
@@ -16,10 +19,25 @@ def index(request):
 
 
 
+def get_50_movies_with_pictures():#temporary helper function
+    all_movies=Movie.objects.all()
+    samples=random.sample(list(all_movies),200)
+    valid_samples=list()
+    for sample in samples:
+        if(os.path.exists("/code/static/images/posters/" + str(sample.id) + ".jpg")):
+            valid_samples.append(sample)
+            if(len(valid_samples)>=50):
+                return valid_samples
+
 
 def get_features_movies()->list[Movie]:
-    return Movie.objects.all()[:10]
+    return get_50_movies_with_pictures()
 
 def get_recommended_movies()->list[Movie]:
-    return Movie.objects.all()[:10]
+    return get_50_movies_with_pictures()
+
+
+
+
+
 
