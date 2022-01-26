@@ -186,4 +186,19 @@ LOGGING = {
             'propagate': True,
         },
     },
+        'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs/command_get_movie_posters.log',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'command_get_movie_posters': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
 }

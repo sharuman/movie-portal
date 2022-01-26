@@ -8,36 +8,42 @@ import logging
 import requests
 
 class Command(BaseCommand):
-    help = 'Save movie posters locally'
+    help = 'Get movie posters from internet and save them locally'
+
+    logger = logging.getLogger('command_get_movie_posters')
+    logger.info('Import started')
 
     def handle(self, *args, **kwargs):
         movies_path = Path(os.getenv('MOVIES_PATH')).expanduser()
         base_path = '.'
-        posters_path = os.path.join(base_path, 'assets/posters/')
+        posters_path = os.path.join(base_path, 'static/images/posters/')
         os.makedirs(os.path.dirname(posters_path), exist_ok=True)
 
-        movies_df = pd.read_csv(movies_path, usecols=['id'], low_memory = False)
-        movies_df.rename(columns= {'id': 'movie_id'}, inplace = True)
-        movies_df['movie_id'] = movies_df['movie_id'].astype(str)
+        movies = pd.read_csv(movies_path, usecols=['id'], low_memory = False)
+        movies.rename(columns= {'id': 'movie_id'}, inplace = True)
+        movies['movie_id'] = movies['movie_id'].astype(str)
 
         # List of movie ids for which we already have a poster
         movies_with_poster: list(str) = [filename[:-4] for filename in os.listdir(posters_path) if filename.endswith('.jpg')]
-        movies_without_poster_df = movies_df[~movies_df['movie_id'].isin(movies_with_poster)]
-
+        movies_without_poster_df = movies[~movies['movie_id'].isin(movies_with_poster)]
+        self.logger.info('{} movies already have a poster'.format(len(movies_with_poster)))
+        self.logger.info('I will download posters for the remaining {} movies'.format(len(movies_without_poster_df)))
+        
         # Register `pandas.progress_apply` and `pandas.Series.map_apply` with `tqdm`
         # (can use `tqdm.gui.tqdm`, `tqdm.notebook.tqdm`, optional kwargs, etc.)
         tqdm.pandas(desc="Saving posters")
         movies_without_poster_df.progress_apply(lambda row: self.getImage(row['movie_id'], posters_path), axis=1)
        
+        self.logger.info('Import completed')
         self.stdout.write(self.style.SUCCESS('Import completed'))
 
     def getImage(self, movie_id, output_path):
         try:
-            url = self.getPosterUrl(movie_id, True)
+            url = self.getPosterUrl(movie_id)
             image_path = os.path.join(output_path, '{}.jpg'.format(movie_id))
             urllib.request.urlretrieve(url, image_path)
         except Exception as e:
-            print(e)
+            self.logger.warn(e)
 
     def getPosterUrl(self, movie_id: int) -> str:
         """Get poster image url

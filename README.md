@@ -5,7 +5,8 @@
 3. Set the variables in `.env` file accordingly
 4. Go to the root folder of the project and run `docker compose up`. Alternatively, just execute the `startDockerized.bat` file in the root folder (only valid for Windows OS). This will create and start 3 different services, one for postgres, one for django (which will run django's migrate and runserver commands) and one for pgdmin.
 5. Import database if provided (see next section for database connection)
-6. Backoffice:
+6. Extract `posters.zip` and put the poster images in `static/images/posters`
+7. Backoffice:
     - url: http://localhost:8000/admin/
     - username: admin
     - password: admin
@@ -29,8 +30,8 @@ Rebuilding and restarting `postgres` (alternatively, you can run `rebuildPostgre
 2. `docker compose build --no-cache postgres`
 3. `docker compose restart postgres`
 
-## Manual Database seeding
-Once the docker containers are running you must follow the steps below in case you do not have the database dump:
+## Manual Setup
+Once the docker containers are running you must follow the steps below in case you do not have the database dump and movie posters:
 1. Download [The Movies Dataset](https://www.kaggle.com/rounakbanik/the-movies-dataset)
 2. `docker exec django-container python manage.py migrate`
 3. `docker exec -it django-container python manage.py createsuperuser`
@@ -40,6 +41,8 @@ Once the docker containers are running you must follow the steps below in case y
 5. create `import` folder in the root directory and place the `.csv` files of _step 0_ in it
 6. update the paths in the `.env` file accordingly
 7. `docker exec django-container python manage.py import_movies`. Pass `--flush` option to empty movies app db tables (the import currently only works with empty movie app tabels).
+8. Create [The Movie Database API](https://developers.themoviedb.org/3/getting-started/introduction). This api key is needed to show movies' posters. Update the `.env` file accordingly.
+9. `docker exec django-container python manage.py get_movie_posters`. The posters will be saved in `static/images/posters` directory.
 
 
 ### Django Help
