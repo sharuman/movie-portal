@@ -16,14 +16,14 @@ services:
     build: .
     container_name: django-container
     command: bash -c "python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - .:/code
     ports:
       - "8000:8000"
     environment:
       - DJANGO_DOCKER=1
     depends_on:
       - postgres
+    volumes:
+      - .:/code
       
   pgadmin:
       image: dpage/pgadmin4
