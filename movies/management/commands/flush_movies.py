@@ -17,3 +17,4 @@ def flush_movies(command):
     Persona.objects.all().delete()
 
     command.stdout.write(command.style.SUCCESS('Flush completed'))
+    
