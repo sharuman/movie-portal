@@ -114,6 +114,9 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# PyCharm project settings
+.idea/
+
 # Rope project settings
 .ropeproject
 
@@ -129,3 +132,5 @@ dmypy.json
 .pyre/
 
 .DS_STORE
+import/
+*.xz
