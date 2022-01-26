@@ -9,9 +9,8 @@ from .forms import SignUpForm
 def index(request):
     now = datetime.datetime.now()
     return render(request, 'index.html', {'now': now})
-    
 
-class SignUpFormView(View):
+class SignUpView(View):
     form_class = SignUpForm
     initial = {'key': 'value'}
     template_name = 'signup.html'
