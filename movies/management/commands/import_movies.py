@@ -1,3 +1,6 @@
+import subprocess
+import sys
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import IntegrityError
 from pathlib import Path
@@ -8,7 +11,9 @@ import logging
 from slugify import slugify
 import itertools
 
+from movies.management.commands.flush_movies import flush_movies
 from movies.models import Genre, Movie, Persona
+
 
 #TODO: Discuss, how and when logger should be used
 logger = logging.getLogger('command_import_movies')
@@ -16,7 +21,17 @@ logger = logging.getLogger('command_import_movies')
 class Command(BaseCommand):
     help = 'Import movies and the main relationships'
 
-    def handle(self, *args, **kwargs):
+    def add_arguments(self, parser):#Add command line argument flush
+        # Positional arguments
+        parser.add_argument("--flush",action="store_true",help="Delete all data from database before the insertion")
+
+    def handle(self, *args, **options):
+
+        if(options["flush"]):#If a user chooses to flush, then flush movies from the database before the insert
+            flush_movies(self)
+
+
+
         #TODO: add user path and more error handling later
         moviesPath = Path(os.getenv('MOVIES_PATH')).expanduser()
         creditsPath = Path(os.getenv('CREDITS_PATH')).expanduser()
@@ -70,7 +85,7 @@ class Command(BaseCommand):
         movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
         movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
 
-        movies=movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime", "vote_average"]]
+        movies=movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime"]]
         movies.dropna(inplace=True)#Drop all rows that have na values that matter to us
         movies.drop_duplicates(subset=["id"],inplace=True)#Only keep movies with the right id
         return movies
@@ -146,7 +161,7 @@ class Command(BaseCommand):
         movie_objects=list()
 
         for _, row in movies.iterrows():
-            movie_slug=slugify(row["title"]+"-"+row["id"])#Title alone is not always unique
+            movie_slug=slugify(row["title"]+"-"+str(+row["id"]))#Title alone is not always unique
             movie = Movie(
                 id=row["id"],
                 title=row["title"],

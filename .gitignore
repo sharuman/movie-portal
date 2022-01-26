@@ -133,3 +133,4 @@ dmypy.json
 
 .DS_STORE
 import/
+*.xz

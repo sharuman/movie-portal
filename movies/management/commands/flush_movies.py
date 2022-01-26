@@ -6,12 +6,14 @@ class Command(BaseCommand):
 
     #TODO: add user path and more error handling later
     def handle(self, *args, **kwargs):
-        self.stdout.write(self.style.NOTICE('Flush started'))
-
-        Movie.objects.all().delete()
-        Genre.objects.all().delete()
-        Persona.objects.all().delete()
-
-        self.stdout.write(self.style.SUCCESS('Flush completed'))
+        flush_movies(self)
 
 # python manage.py flush_movies
+def flush_movies(command):
+    command.stdout.write(command.style.NOTICE('Flush started'))
+
+    Movie.objects.all().delete()
+    Genre.objects.all().delete()
+    Persona.objects.all().delete()
+
+    command.stdout.write(command.style.SUCCESS('Flush completed'))
