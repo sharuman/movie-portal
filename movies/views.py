@@ -6,7 +6,7 @@ import datetime
 
 # Create your views here.
 from movies.models import Movie
-
+from django.contrib.staticfiles import finders
 
 def index(request):
     now = datetime.datetime.now()
@@ -23,8 +23,12 @@ def get_50_movies_with_pictures():#temporary helper function
     all_movies=Movie.objects.all()
     samples=random.sample(list(all_movies),200)
     valid_samples=list()
+
+    basePath=finders.find("images/posters")
+
     for sample in samples:
-        if(os.path.exists("/code/static/images/posters/" + str(sample.id) + ".jpg")):
+        fullPath=os.path.join(basePath,str(sample.id) + ".jpg")
+        if (os.path.exists(fullPath)):
             valid_samples.append(sample)
             if(len(valid_samples)>=50):
                 return valid_samples
