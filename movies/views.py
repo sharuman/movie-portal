@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 import datetime
 from django.views import View
 
+# Create your views here.
 # importing needed, created forms from forms.py
 from .forms import SignUpForm
 
@@ -9,7 +10,7 @@ def index(request):
     now = datetime.datetime.now()
     return render(request, 'index.html', {'now': now})
 
-class SignUpFormView(View):
+class SignUpView(View):
     form_class = SignUpForm
     initial = {'key': 'value'}
     template_name = 'signup.html'

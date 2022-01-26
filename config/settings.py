@@ -158,6 +158,12 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# redirects to home page after logging in
+LOGIN_REDIRECT_URL = '/'
+
+# session lasts for 90 days
+SESSION_COOKIE_AGE = 90 * 24 * 60 * 60
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
