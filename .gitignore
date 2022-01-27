@@ -135,3 +135,7 @@ dmypy.json
 
 #posters
 static/images/posters
+
+import/
+*.xz
+

@@ -4,6 +4,11 @@
 2. `cp .env.example .env`
 3. Set the variables in `.env` file accordingly
 4. Go to the root folder of the project and run `docker compose up`. Alternatively, just execute the `startDockerized.bat` file in the root folder (only valid for Windows OS). This will create and start 3 different services, one for postgres, one for django (which will run django's migrate and runserver commands) and one for pgdmin.
+5. Import database if provided (see next section for database connection)
+6. Backoffice:
+    - url: http://localhost:8000/admin/
+    - username: admin
+    - password: admin
 
 ### Connections
 Complete connection values can be found in the `docker-compose.yml` file.
@@ -16,22 +21,25 @@ Complete connection values can be found in the `docker-compose.yml` file.
 
 Rebuilding and restarting `django` (alternatively, you can run `rebuildDjangoService.bat` which will run the aforementioned commands):
 1. `docker compose stop django`
-2. `docker compose build django`
+2. `docker compose build --no-cache --pull django`
 3. `docker compose restart django`
 
 Rebuilding and restarting `postgres` (alternatively, you can run `rebuildPostgresService.bat` which will run the following commands):
 1. `docker compose stop postgres`
-2. `docker compose build postgres`
+2. `docker compose build --no-cache postgres`
 3. `docker compose restart postgres`
 
-## Run
+## Manual Database seeding
 Once the docker containers are running you must follow the steps below in case you do not have the database dump:
-1. `docker exec django-container python manage.py migrate`
-2. `docker exec -it django-container python manage.py createsuperuser`
-3. Backoffice:
+1. Download [The Movies Dataset](https://www.kaggle.com/rounakbanik/the-movies-dataset)
+2. `docker exec django-container python manage.py migrate`
+3. `docker exec -it django-container python manage.py createsuperuser`
+4. Backoffice:
     - url: http://localhost:8000/admin/
     - credentials: use the username and password set in the previous step
-4. `docker exec django-container python manage.py import_movies`
+5. create `import` folder in the root directory and place the `.csv` files of _step 0_ in it
+6. update the paths in the `.env` file accordingly
+7. `docker exec django-container python manage.py import_movies`. Pass `--flush` option to empty movies app db tables (the import currently only works with empty movie app tabels).
 
 
 ### Django Help
@@ -46,4 +54,3 @@ Once the docker containers are running you must follow the steps below in case y
 
 #### Removing data from ALL tables (Including user table!) 
 `docker exec django-container bash -c "echo yes| python manage.py flush"` -> first pipe yes into command (for confirmation of the command), then flush database
-
