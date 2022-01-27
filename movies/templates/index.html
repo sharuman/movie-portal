@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block title %} Home {% endblock %}
 
 {% block section_title %} Home {% endblock %}
 
 {% block body %}
 
-
-{% load static %}
 {% load addstr from str_filters %}
-{% if featured_movie_list %}
 
+{% if featured_movie_list %}
 <div class="container-fluid my-3">
     <h2 class="font-weight-light text-light">Popular movies</h2>
     <div class="row mx-auto my-auto justify-content-center">
@@ -40,11 +40,11 @@
                 {% endwith %}
                 {% endfor %}
                 <a class="carousel-control-prev bg-transparent w-aut" href="#featuredCarousel" role="button"
-                   data-bs-slide="prev">
+                    data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 </a>
                 <a class="carousel-control-next bg-transparent w-aut" href="#featuredCarousel" role="button"
-                   data-bs-slide="next">
+                    data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </a>
             </div>
@@ -58,7 +58,6 @@
 
 
 {% if recommended_movie_list %}
-
 <div class="container-fluid my-3">
     <h2 class="font-weight-light text-light">Recommended movies</h2>
     <div class="row mx-auto my-auto justify-content-center">
@@ -87,11 +86,11 @@
                 {% endwith %}
                 {% endfor %}
                 <a class="carousel-control-prev bg-transparent w-aut" href="#recommendedCarousel" role="button"
-                   data-bs-slide="prev">
+                    data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 </a>
                 <a class="carousel-control-next bg-transparent w-aut" href="#recommendedCarousel" role="button"
-                   data-bs-slide="next">
+                    data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </a>
             </div>
@@ -102,6 +101,5 @@
 {% else %}
 <p>No recommended movies found!</p>
 {% endif %}
-
 
 {% endblock %}
