@@ -132,5 +132,10 @@ dmypy.json
 .pyre/
 
 .DS_STORE
+
+#posters
+static/images/posters
+
 import/
 *.xz
+
