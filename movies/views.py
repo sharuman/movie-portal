@@ -1,17 +1,12 @@
-
 import os
 import random
-
 from django.shortcuts import render,redirect
-
 import datetime
 from django.views import View
-# importing needed, created forms from forms.py
 from .forms import SignUpForm
-
-
 from movies.models import Movie
 from django.contrib.staticfiles import finders
+from django.contrib.postgres.search import SearchVector
 
 
 def index(request):
@@ -23,6 +18,16 @@ def index(request):
                                           'recommended_movie_list': recommended_movies
                                           })
 
+def search(request):
+    needle = request.GET.get("q")
+    print('Needle:', needle)
+    results = Movie.objects.annotate(search=SearchVector('title', 'plot', config='english')).filter(search=needle)
+    print(results)
+    if(not results):
+        print('No results found')
+        return render(request, 'search_results.html', {'error': 'No results found'})
+    else:
+        return render(request, 'search_results.html', {'movies': results, 'needle': needle})
 
 def get_50_movies_with_pictures():  # temporary helper function
     all_movies = Movie.objects.all()
@@ -64,4 +69,3 @@ class SignUpView(View):
             return redirect(to='/')
         else:
             return render(request, self.template_name, {'form': form})
-

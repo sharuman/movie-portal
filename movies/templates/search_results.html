@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load addstr from str_filters %}
+
+{% block title %} Results {% endblock %}
+
+{% block section_title %} Search results for: {{ needle }} {% endblock %}
+
+{% block body %}
+
+  <div class="album py-5 bg-light">
+    <div class="container">
+      {% if error %}
+        <div class="alert alert-danger" role="alert">
+          {{ error }}
+        </div>
+      {% else %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+          {% for movie in movies %}
+          {% with "images/posters/"|addstr:movie.id|addstr:".jpg" as movie_poster %}
+            <div class="col">
+                <div class="card shadow-sm" style="width: 18rem;">
+                  <a href="#">
+                    <img class="card-img-top" src="{% static movie_poster %}" alt="{{ movie.title }}" width="100">
+                  </a>
+                <div class="card-body">
+                  <h6 class="card-title"><a href="#">{{ movie.title }}</a></h6>
+                  <p class="card-text">
+                    {{ movie.plot|truncatechars:150 }}
+                  </p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Movie id: {{ movie.id }}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endwith %}
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    url = new URL(window.location.href);
+    needle = url.searchParams.get('q')
+    
+    if (needle) {
+        document.getElementById('search').value = needle;
+    } else {
+        // document.getElementById('q').value = '';
+    }
+  </script>
+{% endblock %}
