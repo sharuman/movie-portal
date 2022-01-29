@@ -22,11 +22,11 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container-fluid">
             <!-- Left elements -->
-            <a class="navbar-brand" href="#">The Movie Catalogue</a>
+            <a class="navbar-brand" href="/">The Movie Catalogue</a>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
+                        <a class="nav-link active" aria-current="page" href="/">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">Features</a>
@@ -40,10 +40,10 @@
                 </ul>
             </div>
             <!-- Left elements -->
-
+            
             <!-- Right elements -->
-            <form class="d-flex">
-                <input class="form-control me-1" type="search" placeholder="Search" aria-label="Search">
+            <form class="d-flex" action="/search" method="get">
+                <input class="form-control me-1" name="q" id="search" type="search" placeholder="Search" aria-label="Search">
                 <button class="btn fas fa-search input-group-text border-0" style="color:white" type="submit"></button>
             </form>
 
@@ -57,9 +57,12 @@
             </ul>
             <!-- Right elements -->
         </div>
-
     </nav>
-  
+
+    <div class="container pt-md-4 pb-md-4">
+        <h4 class="font-weight-light text-light bd-title mt-0">{% block section_title %} {% endblock %}</h4>
+    </div>    
+    
 {% block body %}
 
 
