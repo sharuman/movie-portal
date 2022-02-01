@@ -7,7 +7,6 @@ from .forms import SignUpForm
 from movies.models import Movie
 from django.contrib.staticfiles import finders
 from django.contrib.postgres.search import SearchVector
-from django.conf import settings
 
 def index(request):
     now = datetime.datetime.now()
