@@ -6,6 +6,8 @@ from tqdm import tqdm
 import urllib.request
 import logging
 import requests
+from movies.models import Movie
+from datetime import datetime
 
 class Command(BaseCommand):
     help = 'Get movie posters from internet and save them locally'
@@ -40,8 +42,16 @@ class Command(BaseCommand):
     def getImage(self, movie_id, output_path):
         try:
             url = self.getPosterUrl(movie_id)
-            image_path = os.path.join(output_path, '{}.jpg'.format(movie_id))
+            filename = '{}.jpg'.format(movie_id)
+            image_path = os.path.join(output_path, filename)
             urllib.request.urlretrieve(url, image_path)
+            
+            movie = Movie.objects.get(id=int(movie_id))
+            movie.poster_path = image_path
+            movie.updated_at = datetime.now()
+            movie.save()
+        except Movie.DoesNotExist:
+            self.logger.warn('I am not able to set the poster filename: movie {} has not been found in the database'.format(str(movie_id)))
         except Exception as e:
             self.logger.warn(e)
 

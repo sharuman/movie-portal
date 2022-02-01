@@ -7,16 +7,15 @@ from .forms import SignUpForm
 from movies.models import Movie
 from django.contrib.staticfiles import finders
 from django.contrib.postgres.search import SearchVector
-
+from django.conf import settings
 
 def index(request):
     now = datetime.datetime.now()
     feature_movies = get_features_movies()
     recommended_movies = get_recommended_movies()
-    return render(request, 'index.html', {'now': now,
-                                          'featured_movie_list': feature_movies,
-                                          'recommended_movie_list': recommended_movies
-                                          })
+    return render(request, 'index.html', {
+        'featured_movie_list': feature_movies,
+        'recommended_movie_list': recommended_movies})
 
 def search(request):
     needle = request.GET.get("q")

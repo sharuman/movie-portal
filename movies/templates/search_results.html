@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 
 {% load static %}
-{% load addstr from str_filters %}
 
 {% block title %} Results {% endblock %}
 
@@ -18,11 +17,10 @@
       {% else %}
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
           {% for movie in movies %}
-          {% with "images/posters/"|addstr:movie.id|addstr:".jpg" as movie_poster %}
             <div class="col">
                 <div class="card shadow-sm" style="width: 18rem;">
                   <a href="#">
-                    <img class="card-img-top" src="{% static movie_poster %}" alt="{{ movie.title }}" width="100">
+                    <img class="card-img-top" src="/{{ movie.poster_path }}" alt="{{ movie.title }}" width="100">
                   </a>
                 <div class="card-body">
                   <h6 class="card-title"><a href="#">{{ movie.title }}</a></h6>
@@ -35,7 +33,6 @@
                 </div>
               </div>
             </div>
-            {% endwith %}
           {% endfor %}
         </div>
       {% endif %}

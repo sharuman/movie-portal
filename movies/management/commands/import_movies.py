@@ -7,6 +7,7 @@ from tqdm import tqdm
 import logging
 from slugify import slugify
 import itertools
+from django.conf import settings
 
 from movies.management.commands.flush_movies import flush_movies
 from movies.models import Genre, Movie, Persona
@@ -157,6 +158,10 @@ class Command(BaseCommand):
 
         for _, row in movies.iterrows():
             movie_slug=slugify(row["title"]+"-"+str(+row["id"]))# Title alone is not always unique
+            filename = '{}.jpg'.format(row["id"])
+            poster_path = os.path.join(settings.POSTERS_PATH, filename)
+            placeholder_path = os.path.join(settings.POSTERS_PATH, 'poster_placeholder.png')
+
             movie = Movie(
                 id=row["id"],
                 title=row["title"],
@@ -164,6 +169,8 @@ class Command(BaseCommand):
                 length=row["runtime"],
                 released_on=row["release_date"],
                 trailer="",
+                # Not all movies have a poster
+                poster_path=poster_path if os.path.exists(poster_path) else placeholder_path,
                 plot=row["overview"])
             movie_objects.append(movie)
 
