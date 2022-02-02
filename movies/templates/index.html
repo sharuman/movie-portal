@@ -8,8 +8,6 @@
 
 {% block body %}
 
-{% load addstr from str_filters %}
-
 {% if featured_movie_list %}
 <div class="container-fluid my-3">
     <h2 class="font-weight-light text-light">Popular movies</h2>
@@ -17,12 +15,11 @@
         <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner" role="listbox">
                 {% for movie in featured_movie_list %}
-                {% with "images/posters/"|addstr:movie.id|addstr:".jpg" as movie_poster %}
                 {% if forloop.first %}
                 <div class="carousel-item active col-5">
                     <div class="card">
                         <div class="card-img">
-                            <img src="{% static movie_poster %}" class="img-fluid">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
                         </div>
 
                     </div>
@@ -31,13 +28,11 @@
                 <div class="carousel-item col-5">
                     <div class="card">
                         <div class="card-img">
-                            <img src="{% static movie_poster %}" class="img-fluid">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
                         </div>
                     </div>
                 </div>
-
                 {% endif %}
-                {% endwith %}
                 {% endfor %}
                 <a class="carousel-control-prev bg-transparent w-aut" href="#featuredCarousel" role="button"
                     data-bs-slide="prev">
@@ -56,7 +51,6 @@
 <p>No featured movies found!</p>
 {% endif %}
 
-
 {% if recommended_movie_list %}
 <div class="container-fluid my-3">
     <h2 class="font-weight-light text-light">Recommended movies</h2>
@@ -64,12 +58,11 @@
         <div id="recommendedCarousel" class="carousel slide" data-bs-ride="carousel">
             <div class="carousel-inner" role="listbox">
                 {% for movie in recommended_movie_list %}
-                {% with "images/posters/"|addstr:movie.id|addstr:".jpg" as movie_poster %}
                 {% if forloop.first %}
                 <div class="carousel-item active col-5">
                     <div class="card">
                         <div class="card-img">
-                            <img src="{% static movie_poster %}" class="img-fluid">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
                         </div>
                     </div>
                 </div>
@@ -77,13 +70,11 @@
                 <div class="carousel-item col-5">
                     <div class="card">
                         <div class="card-img">
-                            <img src="{% static movie_poster %}" class="img-fluid">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
                         </div>
                     </div>
                 </div>
-
                 {% endif %}
-                {% endwith %}
                 {% endfor %}
                 <a class="carousel-control-prev bg-transparent w-aut" href="#recommendedCarousel" role="button"
                     data-bs-slide="prev">

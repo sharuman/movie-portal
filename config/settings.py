@@ -149,6 +149,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+POSTERS_PATH = 'static/images/posters'
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
