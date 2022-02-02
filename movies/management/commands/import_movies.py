@@ -1,3 +1,5 @@
+from typing import Union
+
 from django.core.management.base import BaseCommand, CommandError
 from django.db.utils import IntegrityError
 from pathlib import Path
@@ -11,7 +13,7 @@ from django.conf import settings
 
 from movies.management.commands.flush_movies import flush_movies
 from movies.models import Genre, Movie, Persona
-
+import numpy as np
 
 # TODO: Discuss, how and when logger should be used
 logger = logging.getLogger('command_import_movies')
@@ -62,6 +64,11 @@ class Command(BaseCommand):
         logger.info('Import completed')
         self.stdout.write(self.style.SUCCESS('Import completed'))
 
+    def convert_to_int_or_nan(self,val:str):#Either return an int, or if this is not possible, a nan value
+        try:
+            return int(val)
+        except ValueError:
+            return np.nan
 
     def get_movies_df(self, moviePath: str, creditsPath: str) -> pd.DataFrame:
         movies = pd.read_csv(
@@ -70,20 +77,27 @@ class Command(BaseCommand):
             low_memory=False,
             encoding="utf8",
             infer_datetime_format=True)
+
+        movies["id"].apply(self.convert_to_int_or_nan) #The ids of the dataset are not clean (non numbers inside), so we actually have to get them into a proper format
+        movies.dropna(inplace=True)  # Drop all rows that have na values that matter to us -> Also invalid id rows
+        movies=movies.astype({'id': np.int64},copy=False)#Now we can set the column to the proper type without getting an error because the conversion doesn't work
+
         #TODO: Use full dataset in final version
         movies = movies.head(1000)#Get first 1000 rows
 
         # get credits dataframe (more info on cast/directors)
-        credits = pd.read_csv(creditsPath, encoding="utf8")
+        credits_df = pd.read_csv(creditsPath, encoding="utf8")#We don't call it credits, because it is already a built in function
+        credits_df.dropna(inplace=True)  # Drop all rows that have na values that matter to us
 
-        movies = pd.merge(movies, credits, on="id")
+        movies = pd.merge(movies, credits_df, on="id") #Match the two dataframes on id
+
+        #Convert from a string representation of a dict to an actual list
         movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
         movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
         movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
 
         movies=movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime"]]
-        movies.dropna(inplace=True)# Drop all rows that have na values that matter to us
-        movies.drop_duplicates(subset=["id"],inplace=True)# Only keep movies with the right id
+        movies.drop_duplicates(subset=["id"],inplace=True)# Only keep merged rows where everything is there
         return movies
 
     def add_relationships(self, movies, movie_objects: list[Movie], genres: dict[str, Genre], casts: dict[str, Persona], crews: dict[str, Persona]):
