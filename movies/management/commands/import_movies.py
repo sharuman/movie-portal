@@ -43,37 +43,42 @@ class Command(BaseCommand):
         movies_df = self.get_movies_df(movies_path, credits_path)
         ratings_df = self.get_ratings_df(ratings_path)
 
-        # Get unique dicts multi value cell column cells
-        genres = self.dict_from_dict_col(movies_df["genres"])
-        casts = self.dict_from_dict_col(movies_df["cast"])
-        crews = self.dict_from_dict_col(movies_df["crew"])
+        # Insert tables with similar logic via generic function (Genre/Persona)
+        self.dict_col_insert(movies_df["genres"], "Genre", Genre)
+        self.dict_col_insert(movies_df["cast"], "Cast", Persona)
+        self.dict_col_insert(movies_df["crew"], "Crew", Persona)
+
+        # Add Users
         users = ratings_df["userId"].unique()
-
-        genre_objects = self.create_genre_objects(genres)
-        casts_objects = self.create_persona_objects(casts)
-        crews_objects = self.create_persona_objects(crews)
         user_objects = self.create_user_objects(users)  # Since those are user ratings, we need the users and ratings
-        movie_objects = self.create_movie_objects(movies_df)
-
-        self.add_elements_to_db(list(genre_objects.values()), "Genre", Genre)
-
-        self.add_elements_to_db(list(casts_objects.values()), "Cast", Persona)
-        self.add_elements_to_db(list(crews_objects.values()), "Crew", Persona)
-
+        users = self.model_list_to_model_dict(list(user_objects.values()))
         self.add_elements_to_db(list(user_objects.values()), "User", User)
 
+        # Add movies
+        movie_objects = self.create_movie_objects(movies_df)
+        movies = self.model_list_to_model_dict(list(movie_objects.values()))
         self.add_elements_to_db(list(movie_objects.values()), "Movie", Movie)
 
-        users = self.model_list_to_model_dict(list(user_objects.values()))
-        movies = self.model_list_to_model_dict(list(movie_objects.values()))
-
+        # Add movie relations
         self.add_relationships(movies_df, movies)
 
+        # Add ratings
         rating_objects = self.create_rating_objects(ratings_df, movies, users)
         self.add_elements_to_db(rating_objects, "Rating", Rating)
 
         logger.info('Import completed')
         self.stdout.write(self.style.SUCCESS('Import completed'))
+
+    def dict_col_insert(self, dict_col: pd.DataFrame, model_name: str, model_object: Model):
+        id_to_str_dict = self.dict_from_dict_col(dict_col)
+        id_to_model_dict = self.create_model_objects(model_object,id_to_str_dict)
+        self.add_elements_to_db(list(id_to_model_dict.values()), model_name, model_object)
+
+    def create_model_objects(self, model_object:Model, id_to_str_dict:dict[int,str])-> dict[int,Model]:
+        if (model_object == Genre):
+            return self.create_genre_objects(id_to_str_dict)
+        elif (model_object == Persona):
+            return self.create_persona_objects(id_to_str_dict)
 
     def convert_to_int_or_nan(self, val: str):  # Either return an int, or if this is not possible, a nan value
         try:
