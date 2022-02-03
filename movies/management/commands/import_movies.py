@@ -71,10 +71,10 @@ class Command(BaseCommand):
 
     def dict_col_insert(self, dict_col: pd.DataFrame, model_name: str, model_object: Model):
         id_to_str_dict = self.dict_from_dict_col(dict_col)
-        id_to_model_dict = self.create_model_objects(model_object,id_to_str_dict)
+        id_to_model_dict = self.create_model_objects(model_object, id_to_str_dict)
         self.add_elements_to_db(list(id_to_model_dict.values()), model_name, model_object)
 
-    def create_model_objects(self, model_object:Model, id_to_str_dict:dict[int,str])-> dict[int,Model]:
+    def create_model_objects(self, model_object: Model, id_to_str_dict: dict[int, str]) -> dict[int, Model]:
         if (model_object == Genre):
             return self.create_genre_objects(id_to_str_dict)
         elif (model_object == Persona):
@@ -97,7 +97,7 @@ class Command(BaseCommand):
         ratings = ratings.head(1000)  # Get first 1000 rows
         return ratings
 
-    def get_movies_df(self, movies_path: str, credits_path: str) -> pd.DataFrame:
+    def get_movies_df(self, movies_path: Path, credits_path: Path) -> pd.DataFrame:
         movies = pd.read_csv(
             movies_path,
             usecols=['id', 'title', 'genres', 'overview', 'tagline', 'release_date', 'runtime'],
@@ -194,12 +194,11 @@ class Command(BaseCommand):
             random_pw = self.rand_str(n=10)
             random_username = self.rand_str(n=10) + "_" + str(user_id)
             obj = User(id=user_id, username=random_username, password=random_pw)
-            users_objs[user_id] = obj
+            users_objs[int(user_id)] = obj
 
         return users_objs
 
-    def create_rating_objects(self, ratings: pd.DataFrame, movies: dict[id, Movie], users: dict[id, User]) -> list[
-        Rating]:
+    def create_rating_objects(self, ratings: pd.DataFrame, movies: dict[int, Movie], users: dict[int, User]) -> list[Rating]:
         ratings_objs = list()
 
         for row_id, row in ratings.iterrows():
