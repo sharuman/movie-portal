@@ -168,7 +168,6 @@ class Command(BaseCommand):
                 slug=movie_slug,
                 length=row["runtime"],
                 released_on=row["release_date"],
-                trailer="",
                 # Not all movies have a poster
                 poster_path=poster_path if os.path.exists(poster_path) else placeholder_path,
                 plot=row["overview"])
