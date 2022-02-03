@@ -1,6 +1,10 @@
+import random
+import string
 from typing import Union
 
+from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Model
 from django.db.utils import IntegrityError
 from pathlib import Path
 import pandas as pd
@@ -12,108 +16,140 @@ import itertools
 from django.conf import settings
 
 from movies.management.commands.flush_movies import flush_movies
-from movies.models import Genre, Movie, Persona
+from movies.models import Genre, Movie, Persona, Rating
 import numpy as np
 
 # TODO: Discuss, how and when logger should be used
 logger = logging.getLogger('command_import_movies')
 
+
 class Command(BaseCommand):
     help = 'Import movies and the main relationships'
 
-    def add_arguments(self, parser):#Add command line argument flush
+    def add_arguments(self, parser):  # Add command line argument flush
         # Positional arguments
-        parser.add_argument("--flush",action="store_true",help="Empty movies app tables before import")
+        parser.add_argument("--flush", action="store_true", help="Empty movies app tables before import")
 
     def handle(self, *args, **options):
         # If a user chooses to flush, then flush movies app related tables from the database before the import
-        if(options["flush"]):
+        if (options["flush"]):
             flush_movies(self)
 
         # TODO: add user path and more error handling later
-        moviesPath = Path(os.getenv('MOVIES_PATH')).expanduser()
-        creditsPath = Path(os.getenv('CREDITS_PATH')).expanduser()
+        movies_path = Path(os.getenv('MOVIES_PATH')).expanduser()
+        credits_path = Path(os.getenv('CREDITS_PATH')).expanduser()
+        ratings_path = Path(os.getenv('RATINGS_PATH')).expanduser()
 
         logger.info('Import started')
         self.stdout.write(self.style.NOTICE('Import started'))
 
-        movies = self.get_movies_df(moviesPath, creditsPath)
+        movies_df = self.get_movies_df(movies_path, credits_path)
+        ratings_df = self.get_ratings_df(ratings_path)
 
         # Get unique dicts multi value cell column cells
-        genres = self.unique_list_from_list_col(movies["genres"])
-        casts = self.unique_list_from_list_col(movies["cast"])
-        crews = self.unique_list_from_list_col(movies["crew"])
+        genres = self.dict_from_dict_col(movies_df["genres"])
+        casts = self.dict_from_dict_col(movies_df["cast"])
+        crews = self.dict_from_dict_col(movies_df["crew"])
+        users = ratings_df["userId"].unique()
 
+        self.stdout.write(self.style.NOTICE("Creating objects"))
         genre_objects = self.create_genre_objects(genres)
         casts_objects = self.create_persona_objects(casts)
         crews_objects = self.create_persona_objects(crews)
+        user_objects = self.create_user_objects(users) #Since those are user ratings, we need the users and ratings
+        movie_objects = self.create_movie_objects(movies_df)
 
-        genre_objects2 = self.add_genre_elements_to_db(genre_objects)
-        casts_objects2, crews_objects2 = self.add_persona_elements_to_db(casts_objects, crews_objects)
+        genre_objects2 = self.add_elements_to_db(list(genre_objects.values()),"Genre",Genre)
+        self.stdout.write(self.style.NOTICE("Genres"))
+        casts_objects2 = self.add_elements_to_db(list(casts_objects.values()),"Cast",Persona)
+        crews_objects2 = self.add_elements_to_db(list(crews_objects.values()),"Crew",Persona)
+        self.stdout.write(self.style.NOTICE("Personas"))
+        user_objects2 = self.add_elements_to_db(list(user_objects.values()),"User",User)
+        self.stdout.write(self.style.NOTICE("Users"))
+        movie_objects2 = self.add_movies_to_db(list(movie_objects.values()))
 
-        genres = self.dictify(genres, genre_objects2)
-        casts = self.dictify(casts, casts_objects2)
-        crews = self.dictify(crews, crews_objects2)
+        self.stdout.write(self.style.NOTICE("Movies"))
+        # genres = self.model_list_to_model_dict(genre_objects2)
+        # casts = self.model_list_to_model_dict(casts_objects2)
+        # crews = self.model_list_to_model_dict(crews_objects2)
+        users = self.model_list_to_model_dict(list(user_objects.values()))
+        movies = self.model_list_to_model_dict(list(movie_objects.values()))
 
-        movie_objects = self.create_movie_objects(movies)
+        self.add_relationships(movies_df, movies)
 
-        movie_objects = self.add_movies_to_db(movie_objects)
-
-        self.add_relationships(movies, movie_objects, genres, casts, crews)
-
+        self.stdout.write(self.style.NOTICE("Relationships"))
+        rating_objects = self.create_rating_objects(ratings_df, movies, users)
+        rating_objects2 = self.add_elements_to_db(rating_objects,"Rating",Rating)
+        self.stdout.write(self.style.NOTICE("Ratings"))
         logger.info('Import completed')
         self.stdout.write(self.style.SUCCESS('Import completed'))
 
-    def convert_to_int_or_nan(self,val:str):#Either return an int, or if this is not possible, a nan value
+
+    def convert_to_int_or_nan(self, val: str):  # Either return an int, or if this is not possible, a nan value
         try:
             return int(val)
         except ValueError:
             return np.nan
 
-    def get_movies_df(self, moviePath: str, creditsPath: str) -> pd.DataFrame:
+    def get_ratings_df(self,ratings_path) -> pd.DataFrame:
+        ratings = pd.read_csv(
+            ratings_path,
+            usecols=['userId', 'movieId', 'rating'],
+            dtype={"userId": np.int64,"movieId":np.int64},
+            low_memory=False,
+            encoding="utf8",
+            infer_datetime_format=True)
+        ratings = ratings.head(1000)  # Get first 1000 rows
+        return ratings
+
+
+    def get_movies_df(self, movies_path: str, credits_path: str) -> pd.DataFrame:
         movies = pd.read_csv(
-            moviePath,
+            movies_path,
             usecols=['id', 'title', 'genres', 'overview', 'tagline', 'release_date', 'runtime'],
             low_memory=False,
             encoding="utf8",
             infer_datetime_format=True)
 
-        movies["id"].apply(self.convert_to_int_or_nan) #The ids of the dataset are not clean (non numbers inside), so we actually have to get them into a proper format
+        movies["id"].apply(
+            self.convert_to_int_or_nan)  # The ids of the dataset are not clean (non numbers inside), so we actually have to get them into a proper format
         movies.dropna(inplace=True)  # Drop all rows that have na values that matter to us -> Also invalid id rows
-        movies=movies.astype({'id': np.int64},copy=False)#Now we can set the column to the proper type without getting an error because the conversion doesn't work
+        movies = movies.astype({'id': np.int64},
+                               copy=False)  # Now we can set the column to the proper type without getting an error because the conversion doesn't work
 
-        #TODO: Use full dataset in final version
-        movies = movies.head(1000)#Get first 1000 rows
+        # TODO: Use full dataset in final version
+        movies = movies.head(1000)  # Get first 1000 rows
 
         # get credits dataframe (more info on cast/directors)
-        credits_df = pd.read_csv(creditsPath, encoding="utf8")#We don't call it credits, because it is already a built in function
+        credits_df = pd.read_csv(credits_path,
+                                 encoding="utf8")  # We don't call it credits, because it is already a built in function
         credits_df.dropna(inplace=True)  # Drop all rows that have na values that matter to us
 
-        movies = pd.merge(movies, credits_df, on="id") #Match the two dataframes on id
+        movies = pd.merge(movies, credits_df, on="id")  # Match the two dataframes on id
 
-        #Convert from a string representation of a dict to an actual list
-        movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
-        movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
-        movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
+        # Convert from a string representation of a dict to an actual list
+        movies["genres"] = movies["genres"].apply(self.str_dict_to_dict)
+        movies["cast"] = movies["cast"].apply(self.str_dict_to_dict)
+        movies["crew"] = movies["crew"].apply(self.str_dict_to_director_dict)
 
-        movies=movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime"]]
-        movies.drop_duplicates(subset=["id"],inplace=True)# Only keep merged rows where everything is there
+        movies = movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime"]]
+        movies.drop_duplicates(subset=["id"], inplace=True)  # Only keep merged rows where everything is there
         return movies
 
-    def add_relationships(self, movies, movie_objects: list[Movie], genres: dict[str, Genre], casts: dict[str, Persona], crews: dict[str, Persona]):
+    def add_relationships(self, movies, movie_objects: dict[int,Movie]):
         genre_relations = list()
         actor_relations = list()
         director_relations = list()
         i = 0
 
         for _, row in movies.iterrows():
-            movie = movie_objects[i]
-            for genre in row["genres"]:
-                genre_relations.append(movie.genres.through(genre_id=genres[genre].id, movie_id=movie.id))
-            for cast in row["cast"]:
-                actor_relations.append(movie.actors.through(persona_id=casts[cast].id, movie_id=movie.id))
-            for director in row["crew"]:
-                director_relations.append(movie.directors.through(persona_id=crews[director].id, movie_id=movie.id))
+            movie = movie_objects[row["id"]]
+            for id in row["genres"].keys():
+                genre_relations.append(movie.genres.through(genre_id=id, movie_id=movie.id))
+            for id in row["cast"].keys():
+                actor_relations.append(movie.actors.through(persona_id=id, movie_id=movie.id))
+            for id in row["crew"].keys():
+                director_relations.append(movie.directors.through(persona_id=id, movie_id=movie.id))
             i += 1
 
         logger.info('Adding movie relationships')
@@ -125,53 +161,117 @@ class Command(BaseCommand):
     # | Persisting objects to the database
     # |---------------------------------------------------------------
 
-    # GENRES
-    def create_genre_objects(self, genres: list[str]) -> list[Genre]:
-        genre_objs = list()
 
-        for genre in genres:
-            obj = Genre(name=genre, slug=slugify(genre))
-            genre_objs.append(obj)
+    # GENRES
+    def create_genre_objects(self, genres: dict[int,str]) -> dict[int,Genre]:
+        genre_objs = dict()
+
+        i = 0
+        for id, name in genres.items():
+            obj = Genre(id=id, name=name, slug=slugify(name))
+            genre_objs[id] = obj
+            i += 1
 
         return genre_objs
+
+    def add_elements_to_db(self,elements:list[Model],model_name:str,model_object:Model)->list[Model]:
+        try:
+            logger.info('Adding ' + model_name)
+            return model_object.objects.bulk_create(elements, ignore_conflicts=True)
+            #return model_object.objects.bulk_update(elements,self.get_all_fields(model_object))
+
+        except IntegrityError as e:
+            logger.warning(model_name + " insertion error: " + str(e))
+            return list()
 
     def add_genre_elements_to_db(self, genres: list[Genre]) -> list[Genre]:
         try:
             logger.info('Adding genres')
-            return Genre.objects.bulk_create(genres)
+            return Genre.objects.bulk_create(genres, ignore_conflicts=True)
+            return Genre.objects.bulk_update(genres, self.get_all_fields(Genre))
 
         except IntegrityError as e:
             logger.warning("Genre insertion error: " + str(e))
             return list()
 
     # PERSONA
-    def create_persona_objects(self, persona: list[str]) -> list[Persona]:
-        persona_objs = list()
+    def create_persona_objects(self, persona: dict[int,str]) -> dict[int,Persona]:
+        persona_objs = dict()
 
-        for person in persona:
-            obj = Persona(full_name=person)
-            persona_objs.append(obj)
+        for id, name in persona.items():
+            obj = Persona(id=id, full_name=name)
+            persona_objs[id]=obj
 
         return persona_objs
 
-    def add_persona_elements_to_db(self, casts: list[Persona], crews: list[Persona]) -> list[list[Persona], list[Persona]]:
+    def create_user_objects(self,users:list[str]) -> dict[int,User]:
+        users_objs=dict()
+
+        for user_id in users:
+
+            random_pw = self.rand_str(n=10)
+            random_username = self.rand_str(n=10) + "_" + str(user_id)
+            obj = User(id=user_id, username=random_username, password=random_pw)
+            users_objs[user_id] = obj
+
+        return users_objs
+
+    def create_rating_objects(self,ratings:pd.DataFrame,movies:dict[id,Movie],users:dict[id,User]) -> list[Rating]:
+        ratings_objs=list()
+
+        for row_id, row in ratings.iterrows():
+            movie_id = row["movieId"]
+            user_id = row["userId"]
+
+            try: #TODO: Add handling later
+                obj = Rating(movie=movies[movie_id], user=users[user_id], rating=row["rating"])
+                ratings_objs.append(obj)
+            except:
+                pass
+
+        return ratings_objs
+
+    def rand_str(self, chars=string.ascii_uppercase + string.digits, n=10): #Create random string
+        return ''.join(random.choice(chars) for _ in range(n))
+
+    def add_persona_elements_to_db(self, personas: list[Persona]) -> list[Persona]:
         try:
-            logger.info('Adding cast and crew')
-            newCast = Persona.objects.bulk_create(casts)
-            newCrew = Persona.objects.bulk_create(crews)
-            return newCast,newCrew
+            logger.info('Adding cast/crew')
+            Persona.objects.bulk_create(personas, ignore_conflicts=True)
+            return Persona.objects.bulk_update(personas,self.get_all_fields(Persona))
 
         except IntegrityError as e:
             logger.warning("Persona insertion error: " + str(e))
-            return [list(), list()]
+            return list()
+
+    def add_user_elements_to_db(self, users: list[User]) -> list[User]:
+        try:
+            logger.info('Adding user')
+            User.objects.bulk_create(users, ignore_conflicts=True)
+            return User.objects.bulk_update(users)
+
+        except IntegrityError as e:
+            logger.warning("User insertion error: " + str(e))
+            return list()
+
+    def add_rating_elements_to_db(self, ratings: list[Rating]) -> list[Rating]:
+        try:
+            logger.info('Adding rating')
+            Rating.objects.bulk_create(ratings, ignore_conflicts=True)
+            return Rating.objects.bulk_update(ratings)
+
+        except IntegrityError as e:
+            logger.warning("Rating insertion error: " + str(e))
+            return list()
+
 
     # MOVIES
-    def create_movie_objects(self, movies: pd.DataFrame) -> list[Movie]:
-        #TODO: add ratings and trailer later, maybe split class up so we don't do too much at once
-        movie_objects=list()
+    def create_movie_objects(self, movies: pd.DataFrame) -> dict[id,Movie]:
+        # TODO: add ratings and trailer later, maybe split class up so we don't do too much at once
+        movie_objects = dict()
 
         for _, row in movies.iterrows():
-            movie_slug=slugify(row["title"]+"-"+str(+row["id"]))# Title alone is not always unique
+            movie_slug = slugify(row["title"] + "-" + str(+row["id"]))  # Title alone is not always unique
             filename = '{}.jpg'.format(row["id"])
             poster_path = os.path.join(settings.POSTERS_PATH, filename)
             placeholder_path = os.path.join(settings.POSTERS_PATH, 'poster_placeholder.png')
@@ -186,14 +286,16 @@ class Command(BaseCommand):
                 # Not all movies have a poster
                 poster_path=poster_path if os.path.exists(poster_path) else placeholder_path,
                 plot=row["overview"])
-            movie_objects.append(movie)
+            movie_objects[row["id"]] = movie
 
         return movie_objects
 
     def add_movies_to_db(self, movies: list[Movie]) -> list[Movie]:
         try:
             logger.info('Adding movies')
-            return Movie.objects.bulk_create(movies)
+            return Movie.objects.bulk_create(movies, ignore_conflicts=True)
+            #return Movie.objects.bulk_update(movies,ignore_conflicts=True)
+
         except IntegrityError as e:
             logger.warning("Movie insertion error: " + str(e))
             return list()
@@ -201,6 +303,24 @@ class Command(BaseCommand):
     # |---------------------------------------------------------------
     # | Helper functions
     # |---------------------------------------------------------------
+
+    def str_dict_to_dict(self, str_dict) -> dict[int,str]:
+        genre_aslist = eval(str_dict)
+        all_entries=dict()
+
+        for g in genre_aslist:
+            all_entries[g["id"]] = g["name"]
+
+        return all_entries
+
+    def str_dict_to_director_dict(self, str_dict) -> dict[int,str]:
+        genre_aslist = eval(str_dict)
+        all_entries=dict()
+        for g in genre_aslist:
+            if g["department"] == "Directing":
+                all_entries[g["id"]] = g["name"]
+
+        return all_entries
 
     def str_dict_to_unique_list(self, genres) -> list[str]:
         genre_aslist = eval(genres)
@@ -210,9 +330,30 @@ class Command(BaseCommand):
         genre_aslist = eval(genres)
         return list(set(g["name"] for g in genre_aslist if g["department"] == "Directing"))
 
-    def unique_list_from_list_col(self, list_col) -> list[str]:
-        return list(set(itertools.chain.from_iterable(list_col)))
-    
+    def dict_from_dict_col(self, dict_col) -> dict[int,str]:
+        unique_dict=dict()
+        for row_dict in dict_col.values:
+            for id,name in row_dict.items():
+                unique_dict[id] = name
+
+        return unique_dict
+
+    def get_all_fields(self, model:Model)->list[str]:
+        all_fields=list()
+        for field in model._meta.get_fields(include_parents=False):
+            if(field.concrete and not field.many_to_many and not field.primary_key):
+                all_fields.append(field.name)
+        return all_fields
+
+    # Combine 2 lists with the same length and a fitting order together
+    def model_list_to_model_dict(self, models: list[Model])->dict[int,Model]:
+        obj_dict = dict()
+
+        for model in models:
+            obj_dict[model.id] = model
+
+        return obj_dict
+
     # Combine 2 lists with the same length and a fitting order together
     def dictify(self, keys: list, vals: list):
         obj_dict = dict()
@@ -221,3 +362,5 @@ class Command(BaseCommand):
             obj_dict[keys[i]] = vals[i]
 
         return obj_dict
+
+
