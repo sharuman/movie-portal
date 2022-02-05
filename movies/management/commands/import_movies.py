@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):  # Add command line argument flush
         # Positional arguments
         parser.add_argument("--flush", action="store_true", help="Empty movies app tables before import")
-        parser.add_argument("-max_rows", default=1000, type=int)
+        parser.add_argument("-max_rows", default=0, type=int)
     def handle(self, *args, **options):
         # If a user chooses to flush, then flush movies app related tables from the database before the import
         if (options["flush"]):

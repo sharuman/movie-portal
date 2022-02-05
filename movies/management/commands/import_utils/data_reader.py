@@ -29,8 +29,8 @@ class DataFrameReader:
         movies = movies.astype({'id': np.int64},
                                copy=False)  # Now we can set the column to the proper type without getting an error because the conversion doesn't work
 
-        # TODO: Use full dataset in final version
-        movies = movies.head(max_rows)  # Get first 1000 rows
+        if max_rows > 0:
+            movies = movies.head(max_rows)  # Get first 1000 rows
 
         # get credits dataframe (more info on cast/directors)
         credits_df = pd.read_csv(self.credits_path,
@@ -56,7 +56,8 @@ class DataFrameReader:
             low_memory=False,
             encoding="utf8",
             infer_datetime_format=True)
-        ratings = ratings.head(max_rows)  # Get first 1000 rows
+        if max_rows > 0:
+            ratings = ratings.head(max_rows)  # Get first 1000 rows
         return ratings
 
         # |---------------------------------------------------------------

@@ -20,9 +20,9 @@ class ObjectCreator:
 
         for user_id in users:
             random_pw = self.rand_str(n=10)
-            random_username = self.rand_str(n=10) + "_" + str(user_id)
             first_name=names.get_first_name()
             last_name=names.get_last_name()
+            random_username = first_name + "_"+ last_name + "_" + str(user_id)
             email=first_name + "."+ last_name + "_" + str(user_id) + "@gmail.com"
             obj = User(id=user_id, username=random_username, password=make_password(random_pw),first_name=first_name, last_name=last_name,email=email)
             users_objs[int(user_id)] = obj
