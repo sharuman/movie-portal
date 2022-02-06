@@ -37,15 +37,18 @@ class Genre(models.Model):
 class Movie(models.Model):
     title = models.CharField(max_length=254)
     slug = models.SlugField(max_length=254, unique=True)
-    length = models.FloatField(default=0.0, blank=True)
+    length = models.FloatField(default=0.0, blank=True, null=True)
     released_on = models.DateField(blank=True, null=True)
-    trailer = models.URLField(max_length=254, blank=True, default=None)
+    trailer = models.URLField(max_length=254, blank=True, null=True)
     plot = models.TextField(blank=True, null=True)
     # Relationships
     directors = models.ManyToManyField(Persona, related_name='directors')
     actors = models.ManyToManyField(Persona, related_name='actors')
     genres = models.ManyToManyField(Genre, related_name='genres')
     ratings = models.ManyToManyField(User, through='Rating', blank=True)
+    # Posters can be treated as assets, therefore we could create an Assets model and
+    # use https://django-polymorphic.readthedocs.io/en/stable/quickstart.html
+    poster_path = models.URLField(max_length=254, blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -68,4 +71,3 @@ class Rating(models.Model):
     class Meta:
         # A user can rate a movie only once
         unique_together = (('movie', 'user'))
-        

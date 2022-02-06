@@ -6,9 +6,12 @@ from tqdm import tqdm
 import urllib.request
 import logging
 import requests
+from movies.models import Movie
+from datetime import datetime
+from django.conf import settings
 
 class Command(BaseCommand):
-    help = 'Get movie posters from internet and save them locally'
+    help = 'Get movie posters from the TMDB API and save them locally'
 
     logger = logging.getLogger('command_get_movie_posters')
     logger.info('Import started')
@@ -40,11 +43,19 @@ class Command(BaseCommand):
     def getImage(self, movie_id, output_path):
         try:
             url = self.getPosterUrl(movie_id)
-            image_path = os.path.join(output_path, '{}.jpg'.format(movie_id))
+            filename = '{}.jpg'.format(movie_id)
+            image_path = os.path.join(output_path, filename)
             urllib.request.urlretrieve(url, image_path)
+
+            movie = Movie.objects.get(id=int(movie_id))
+            movie.poster_path = image_path
+            movie.updated_at = datetime.now()
+            movie.save()
+        except Movie.DoesNotExist:
+            self.logger.warn('I am not able to set the poster filename: movie {} has not been found in the database'.format(str(movie_id)))
         except Exception as e:
             self.logger.warn(e)
-
+           
     def getPosterUrl(self, movie_id: int) -> str:
         """Get poster image url
         Args:
@@ -64,6 +75,11 @@ class Command(BaseCommand):
             return full_path
         except Exception:
             msg = 'Error while getting poster for movie id ' + str(movie_id)
+            movie = Movie.objects.get(id=int(movie_id))
+            image_path = os.path.join(settings.POSTERS_PATH, 'poster_placeholder.png')
+            movie.poster_path = image_path
+            movie.updated_at = datetime.now()
+            movie.save()
             # We want to log the message when importing posters
             raise Exception(msg)
 

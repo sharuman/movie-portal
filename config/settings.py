@@ -149,6 +149,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+POSTERS_PATH = 'static/images/posters'
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
@@ -192,7 +194,7 @@ LOGGING = {
             'propagate': True,
         },
     },
-        'handlers': {
+    'handlers': {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
@@ -202,6 +204,21 @@ LOGGING = {
     },
     'loggers': {
         'command_get_movie_posters': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs/command_set_movie_trailers.log',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'command_set_movie_trailers': {
             'handlers': ['file'],
             'level': 'INFO',
             'propagate': True,

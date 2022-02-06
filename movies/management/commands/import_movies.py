@@ -1,202 +1,122 @@
-from django.core.management.base import BaseCommand, CommandError
+
+
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+from django.db.models import Model
 from django.db.utils import IntegrityError
-from pathlib import Path
 import pandas as pd
-import os
-from tqdm import tqdm
 import logging
-from slugify import slugify
-import itertools
-
+from movies.management.commands.import_utils.data_reader import DataFrameReader
+from movies.management.commands.import_utils.object_creation import ObjectCreator
 from movies.management.commands.flush_movies import flush_movies
-from movies.models import Genre, Movie, Persona
-
+from movies.models import Genre, Movie, Persona, Rating
 
 # TODO: Discuss, how and when logger should be used
 logger = logging.getLogger('command_import_movies')
 
+
 class Command(BaseCommand):
     help = 'Import movies and the main relationships'
 
-    def add_arguments(self, parser):#Add command line argument flush
+    def add_arguments(self, parser):  # Add command line argument flush
         # Positional arguments
-        parser.add_argument("--flush",action="store_true",help="Empty movies app tables before import")
-
+        parser.add_argument("--flush", action="store_true", help="Empty movies app tables before import")
+        parser.add_argument("-max_rows", default=0, type=int)
     def handle(self, *args, **options):
         # If a user chooses to flush, then flush movies app related tables from the database before the import
-        if(options["flush"]):
+        if (options["flush"]):
             flush_movies(self)
 
-        # TODO: add user path and more error handling later
-        moviesPath = Path(os.getenv('MOVIES_PATH')).expanduser()
-        creditsPath = Path(os.getenv('CREDITS_PATH')).expanduser()
+        max_rows = options["max_rows"]
+        df_reader = DataFrameReader()
 
         logger.info('Import started')
         self.stdout.write(self.style.NOTICE('Import started'))
 
-        movies = self.get_movies_df(moviesPath, creditsPath)
+        movies_df = df_reader.get_movies_df(max_rows)
+        ratings_df = df_reader.get_ratings_df(max_rows)
 
-        # Get unique dicts multi value cell column cells
-        genres = self.unique_list_from_list_col(movies["genres"])
-        casts = self.unique_list_from_list_col(movies["cast"])
-        crews = self.unique_list_from_list_col(movies["crew"])
+        creator = ObjectCreator()
 
-        genre_objects = self.create_genre_objects(genres)
-        casts_objects = self.create_persona_objects(casts)
-        crews_objects = self.create_persona_objects(crews)
+        # Insert tables with similar logic via generic function (Genre/Persona)
+        self.dict_col_insert(movies_df["genres"], "Genre", Genre, creator)
+        self.dict_col_insert(movies_df["cast"], "Cast", Persona, creator)
+        self.dict_col_insert(movies_df["crew"], "Crew", Persona, creator)
 
-        genre_objects2 = self.add_genre_elements_to_db(genre_objects)
-        casts_objects2, crews_objects2 = self.add_persona_elements_to_db(casts_objects, crews_objects)
+        # Add Users
+        users = ratings_df["userId"].unique()
+        user_objects = creator.create_user_objects(users)  # Since those are user ratings, we need the users and ratings
+        users = self.model_list_to_model_dict(list(user_objects.values()))
+        self.add_elements_to_db(list(user_objects.values()), "User", User)
 
-        genres = self.dictify(genres, genre_objects2)
-        casts = self.dictify(casts, casts_objects2)
-        crews = self.dictify(crews, crews_objects2)
+        # Add movies
+        movie_objects = creator.create_movie_objects(movies_df)
+        movies = self.model_list_to_model_dict(list(movie_objects.values()))
+        self.add_elements_to_db(list(movie_objects.values()), "Movie", Movie)
 
-        movie_objects = self.create_movie_objects(movies)
+        genre_throughs, actor_throughs, director_throughs = creator.create_genre_actor_director_through_objects(movies_df,
+                                                                                                                movies)
+        # Add movie relations
+        self.add_throughs_to_database(genre_throughs, actor_throughs, director_throughs)
 
-        movie_objects = self.add_movies_to_db(movie_objects)
-
-        self.add_relationships(movies, movie_objects, genres, casts, crews)
+        # Add ratings
+        rating_objects = creator.create_rating_objects(ratings_df, movies, users)
+        self.add_elements_to_db(rating_objects, "Rating", Rating)
 
         logger.info('Import completed')
         self.stdout.write(self.style.SUCCESS('Import completed'))
 
-
-    def get_movies_df(self, moviePath: str, creditsPath: str) -> pd.DataFrame:
-        movies = pd.read_csv(
-            moviePath,
-            usecols=['id', 'title', 'genres', 'overview', 'tagline', 'release_date', 'runtime'],
-            low_memory=False,
-            encoding="utf8",
-            infer_datetime_format=True)
-        #TODO: Use full dataset in final version
-        movies = movies.head(1000)#Get first 1000 rows
-
-        # get credits dataframe (more info on cast/directors)
-        credits = pd.read_csv(creditsPath, encoding="utf8")
-
-        movies = pd.merge(movies, credits, on="id")
-        movies["genres"] = movies["genres"].apply(self.str_dict_to_unique_list)
-        movies["cast"] = movies["cast"].apply(self.str_dict_to_unique_list)
-        movies["crew"] = movies["crew"].apply(self.str_dict_to_unique_director_list)
-
-        movies=movies[["id", "title", "genres", "tagline", "overview", "cast", "crew", "release_date", "runtime"]]
-        movies.dropna(inplace=True)# Drop all rows that have na values that matter to us
-        movies.drop_duplicates(subset=["id"],inplace=True)# Only keep movies with the right id
-        return movies
-
-    def add_relationships(self, movies, movie_objects: list[Movie], genres: dict[str, Genre], casts: dict[str, Persona], crews: dict[str, Persona]):
-        genre_relations = list()
-        actor_relations = list()
-        director_relations = list()
-        i = 0
-
-        for _, row in movies.iterrows():
-            movie = movie_objects[i]
-            for genre in row["genres"]:
-                genre_relations.append(movie.genres.through(genre_id=genres[genre].id, movie_id=movie.id))
-            for cast in row["cast"]:
-                actor_relations.append(movie.actors.through(persona_id=casts[cast].id, movie_id=movie.id))
-            for director in row["crew"]:
-                director_relations.append(movie.directors.through(persona_id=crews[director].id, movie_id=movie.id))
-            i += 1
-
-        logger.info('Adding movie relationships')
-        Movie.genres.through.objects.bulk_create(genre_relations)
-        Movie.actors.through.objects.bulk_create(actor_relations)
-        Movie.directors.through.objects.bulk_create(director_relations)
+    def dict_col_insert(self, dict_col: pd.DataFrame, model_name: str, model_object: Model, creator: ObjectCreator):
+        id_to_str_dict = self.dict_from_dict_col(dict_col)
+        id_to_model_dict = creator.create_model_objects(model_object, id_to_str_dict)
+        self.add_elements_to_db(list(id_to_model_dict.values()), model_name, model_object)
 
     # |---------------------------------------------------------------
     # | Persisting objects to the database
     # |---------------------------------------------------------------
 
-    # GENRES
-    def create_genre_objects(self, genres: list[str]) -> list[Genre]:
-        genre_objs = list()
-
-        for genre in genres:
-            obj = Genre(name=genre, slug=slugify(genre))
-            genre_objs.append(obj)
-
-        return genre_objs
-
-    def add_genre_elements_to_db(self, genres: list[Genre]) -> list[Genre]:
+    # GENERIC
+    def add_elements_to_db(self, elements: list[Model], model_name: str, model_object: Model) -> list[Model]:
         try:
-            logger.info('Adding genres')
-            return Genre.objects.bulk_create(genres)
+            logger.info('Adding ' + model_name)
+            return model_object.objects.bulk_create(elements, ignore_conflicts=True)
 
         except IntegrityError as e:
-            logger.warning("Genre insertion error: " + str(e))
+            logger.warning(model_name + " insertion error: " + str(e))
             return list()
 
-    # PERSONA
-    def create_persona_objects(self, persona: list[str]) -> list[Persona]:
-        persona_objs = list()
+    def add_throughs_to_database(self, genre_throughs: list, actor_throughs: list, director_throughs: list):
 
-        for person in persona:
-            obj = Persona(full_name=person)
-            persona_objs.append(obj)
-
-        return persona_objs
-
-    def add_persona_elements_to_db(self, casts: list[Persona], crews: list[Persona]) -> list[list[Persona], list[Persona]]:
-        try:
-            logger.info('Adding cast and crew')
-            newCast = Persona.objects.bulk_create(casts)
-            newCrew = Persona.objects.bulk_create(crews)
-            return newCast,newCrew
-
-        except IntegrityError as e:
-            logger.warning("Persona insertion error: " + str(e))
-            return [list(), list()]
-
-    # MOVIES
-    def create_movie_objects(self, movies: pd.DataFrame) -> list[Movie]:
-        #TODO: add ratings and trailer later, maybe split class up so we don't do too much at once
-        movie_objects=list()
-
-        for _, row in movies.iterrows():
-            movie_slug=slugify(row["title"]+"-"+str(+row["id"]))# Title alone is not always unique
-            movie = Movie(
-                id=row["id"],
-                title=row["title"],
-                slug=movie_slug,
-                length=row["runtime"],
-                released_on=row["release_date"],
-                trailer="",
-                plot=row["overview"])
-            movie_objects.append(movie)
-
-        return movie_objects
-
-    def add_movies_to_db(self, movies: list[Movie]) -> list[Movie]:
-        try:
-            logger.info('Adding movies')
-            return Movie.objects.bulk_create(movies)
-        except IntegrityError as e:
-            logger.warning("Movie insertion error: " + str(e))
-            return list()
-
+        logger.info('Adding movie relationships')
+        Movie.genres.through.objects.bulk_create(genre_throughs, ignore_conflicts=True)
+        Movie.actors.through.objects.bulk_create(actor_throughs, ignore_conflicts=True)
+        Movie.directors.through.objects.bulk_create(director_throughs, ignore_conflicts=True)
+        
     # |---------------------------------------------------------------
     # | Helper functions
     # |---------------------------------------------------------------
 
-    def str_dict_to_unique_list(self, genres) -> list[str]:
-        genre_aslist = eval(genres)
-        return list(set(g["name"] for g in genre_aslist))
+    def dict_from_dict_col(self, dict_col) -> dict[int, str]:
+        unique_dict = dict()
+        for row_dict in dict_col.values:
+            for id, name in row_dict.items():
+                unique_dict[id] = name
 
-    def str_dict_to_unique_director_list(self, genres) -> list[str]:
-        genre_aslist = eval(genres)
-        return list(set(g["name"] for g in genre_aslist if g["department"] == "Directing"))
+        return unique_dict
 
-    def unique_list_from_list_col(self, list_col) -> list[str]:
-        return list(set(itertools.chain.from_iterable(list_col)))
-    
+
+    def get_all_fields(self, model: Model) -> list[str]:
+        all_fields = list()
+        for field in model._meta.get_fields(include_parents=False):
+            if (field.concrete and not field.many_to_many and not field.primary_key):
+                all_fields.append(field.name)
+        return all_fields
+
     # Combine 2 lists with the same length and a fitting order together
-    def dictify(self, keys: list, vals: list):
+    def model_list_to_model_dict(self, models: list[Model]) -> dict[int, Model]:
         obj_dict = dict()
 
-        for i in range(len(keys)):
-            obj_dict[keys[i]] = vals[i]
+        for model in models:
+            obj_dict[model.id] = model
 
         return obj_dict
