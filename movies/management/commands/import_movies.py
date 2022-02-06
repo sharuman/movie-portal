@@ -33,6 +33,9 @@ class Command(BaseCommand):
         logger.info('Import started')
         self.stdout.write(self.style.NOTICE('Import started'))
 
+        logger.info('Reading Csv files')
+        self.stdout.write(self.style.NOTICE('Reading Csv files'))
+
         movies_df = df_reader.get_movies_df(max_rows)
         ratings_df = df_reader.get_ratings_df(max_rows)
 
@@ -54,9 +57,9 @@ class Command(BaseCommand):
         movies = self.model_list_to_model_dict(list(movie_objects.values()))
         self.add_elements_to_db(list(movie_objects.values()), "Movie", Movie)
 
-        genre_throughs, actor_throughs, director_throughs = creator.create_genre_actor_director_through_objects(movies_df,
-                                                                                                                movies)
         # Add movie relations
+        genre_throughs, actor_throughs, director_throughs = creator.create_genre_actor_director_through_objects(
+            movies_df, movies)
         self.add_throughs_to_database(genre_throughs, actor_throughs, director_throughs)
 
         # Add ratings
@@ -79,7 +82,9 @@ class Command(BaseCommand):
     def add_elements_to_db(self, elements: list[Model], model_name: str, model_object: Model) -> list[Model]:
         try:
             logger.info('Adding ' + model_name)
-            return model_object.objects.bulk_create(elements, ignore_conflicts=True)
+            self.stdout.write(self.style.NOTICE('Adding ' + model_name))
+            # Create in bulk for faster performance, 1000 objects per batch to not get out of memory error
+            return model_object.objects.bulk_create(elements, ignore_conflicts=True, batch_size=1000)
 
         except IntegrityError as e:
             logger.warning(model_name + " insertion error: " + str(e))
@@ -88,9 +93,10 @@ class Command(BaseCommand):
     def add_throughs_to_database(self, genre_throughs: list, actor_throughs: list, director_throughs: list):
 
         logger.info('Adding movie relationships')
-        Movie.genres.through.objects.bulk_create(genre_throughs, ignore_conflicts=True)
-        Movie.actors.through.objects.bulk_create(actor_throughs, ignore_conflicts=True)
-        Movie.directors.through.objects.bulk_create(director_throughs, ignore_conflicts=True)
+        self.stdout.write(self.style.NOTICE('Adding movie relationships'))
+        Movie.genres.through.objects.bulk_create(genre_throughs, ignore_conflicts=True, batch_size=1000)
+        Movie.actors.through.objects.bulk_create(actor_throughs, ignore_conflicts=True, batch_size=1000)
+        Movie.directors.through.objects.bulk_create(director_throughs, ignore_conflicts=True, batch_size=1000)
     # |---------------------------------------------------------------
     # | Helper functions
     # |---------------------------------------------------------------
