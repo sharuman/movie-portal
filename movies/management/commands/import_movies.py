@@ -97,6 +97,7 @@ class Command(BaseCommand):
         Movie.genres.through.objects.bulk_create(genre_throughs, ignore_conflicts=True, batch_size=1000)
         Movie.actors.through.objects.bulk_create(actor_throughs, ignore_conflicts=True, batch_size=1000)
         Movie.directors.through.objects.bulk_create(director_throughs, ignore_conflicts=True, batch_size=1000)
+
     # |---------------------------------------------------------------
     # | Helper functions
     # |---------------------------------------------------------------

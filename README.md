@@ -40,8 +40,7 @@ Once the docker containers are running you must follow the steps below in case y
     - credentials: use the username and password set in the previous step
 5. create `import` folder in the root directory and place the `.csv` files of _step 0_ in it
 6. update the paths in the `.env` file accordingly
-7. `docker exec django-container python manage.py import_movies`. Pass `--flush` option to empty movies app db tables (except user table).
-	The import_movies function imports by default all rows of the csv. To change the number of imported rows, pass the option -max_rows X where X is your desired maximum number of rows
+7. `docker exec django-container python manage.py import_movies -max_rows=1000`. Omit the `max_rows` argument to import all the movies. Pass `--flush` option to empty movies app db tables (except user table).
 8. Create [The Movie Database API](https://developers.themoviedb.org/3/getting-started/introduction). This api key is needed to show movies' posters. Update the `.env` file accordingly.
 9. `docker exec django-container python manage.py get_movie_posters`. The posters will be saved in `static/images/posters` directory.
 
