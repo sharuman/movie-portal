@@ -15,6 +15,11 @@
             <div class="card-img">
                 <img src="/{{ movie.poster_path }}" class="img-fluid">
             </div>
+            {%if user.is_authenticated %}
+		    <input id="input-1" name="input-1" class="rating rating-loading" data-min="0" data-max="5" data-step="0.5">
+            {% else %}
+            <input id="input-6" name="input-6" class="rating rating-loading" value="{{ movie.get_avg_ratings }}" data-min="0" data-max="5" data-step="0.5" data-readonly="true">
+            {% endif %}
         </div>
         <div class="col-md-4">
             <h1 class="font-weight-light text-light">{{ movie.title }}</h1>

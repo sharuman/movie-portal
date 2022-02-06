@@ -1,3 +1,4 @@
+from django.db.models import Avg
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
@@ -68,6 +69,10 @@ class Movie(models.Model):
     def get_genres(self):
         genres = self.genres.values_list('name', flat=True)[:5]
         return ', '.join(genres)
+    
+    def get_avg_ratings(self):
+        avg_ratings = self.ratings.values('rating__rating').aggregate(avg_rating=Avg('rating__rating'))['avg_rating']
+        return avg_ratings
 
 # ------------
 # RATING MODEL
