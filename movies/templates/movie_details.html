@@ -6,19 +6,20 @@
 
 <div class="container">
     {% if error %}
-        <div class="alert alert-danger" role="alert">
-          {{ error }}
-        </div>
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
     {% else %}
-        <div class="row">
+    <div class="row">
         <div class="col-sm-5 col-md-6">
             <div class="card-img">
                 <img src="/{{ movie.poster_path }}" class="img-fluid">
             </div>
             {%if user.is_authenticated %}
-		    <input id="input-1" name="input-1" class="rating rating-loading" data-min="0" data-max="5" data-step="0.5">
+            <input id="input-1" name="input-1" class="rating rating-loading" data-min="0" data-max="5" data-step="0.5">
             {% else %}
-            <input id="input-6" name="input-6" class="rating rating-loading" value="{{ movie.get_avg_ratings }}" data-min="0" data-max="5" data-step="0.5" data-readonly="true">
+            <input id="input-6" name="input-6" class="rating rating-loading" value="{{ movie.get_avg_ratings }}"
+                data-min="0" data-max="5" data-step="0.5" data-readonly="true">
             {% endif %}
         </div>
         <div class="col-md-4">
@@ -50,28 +51,28 @@
                 </div>
             </div>
         </div>
-        </div>
-        <h3 class="font-weight-light text-light">Movies you might like</h3>
-        <div class="container py-4">
-            <div class="row gy-5">
-                <div class="col">
-                    <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-                </div>
-                <div class="col">
-                    <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-                </div>
-                <div class="col">
-                    <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-                </div>
-                <div class="col">
-                    <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-                </div>
-                <div class="col">
-                    <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-                </div>
+    </div>
+    <h3 class="font-weight-light text-light">Movies you might like</h3>
+    <div class="container py-4">
+        <div class="row gy-5">
+            <div class="col">
+                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
+            </div>
+            <div class="col">
+                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
+            </div>
+            <div class="col">
+                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
+            </div>
+            <div class="col">
+                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
+            </div>
+            <div class="col">
+                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
             </div>
         </div>
+    </div>
     {% endif %}
-  </div>
+</div>
 
 {% endblock %}

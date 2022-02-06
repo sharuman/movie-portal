@@ -7,19 +7,23 @@ from django.contrib.auth.models import User
 # PERSONA MODEL
 # -------------
 # Persona represents both, actors/actresses and directors
-class Persona(models.Model):    
+
+
+class Persona(models.Model):
     full_name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Needed to display Persona name in the drop-down list when setting movie-persona 
-    # relationships in the backoffice 
+    # Needed to display Persona name in the drop-down list when setting movie-persona
+    # relationships in the backoffice
     def __str__(self):
-       return self.full_name  
+        return self.full_name
 
 # -----------
 # GENRE MODEL
 # -----------
+
+
 class Genre(models.Model):
     name = models.CharField(max_length=254)
     slug = models.SlugField(max_length=254, unique=True)
@@ -27,14 +31,16 @@ class Genre(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Needed to display Genre name in the drop-down list when setting movie-genre 
-    # relationships in the backoffice     
+    # Needed to display Genre name in the drop-down list when setting movie-genre
+    # relationships in the backoffice
     def __str__(self):
-       return self.name    
+        return self.name
 
 # -----------
 # MOVIE MODEL
 # -----------
+
+
 class Movie(models.Model):
     title = models.CharField(max_length=254)
     slug = models.SlugField(max_length=254, unique=True)
@@ -54,9 +60,9 @@ class Movie(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Needed to display Movie title in the Ratings section of the backoffice   
+    # Needed to display Movie title in the Ratings section of the backoffice
     def __str__(self):
-       return self.title
+        return self.title
 
     def get_actors(self):
         actors = self.actors.values_list('full_name', flat=True)[:5]
@@ -69,18 +75,22 @@ class Movie(models.Model):
     def get_genres(self):
         genres = self.genres.values_list('name', flat=True)[:5]
         return ', '.join(genres)
-    
+
     def get_avg_ratings(self):
-        avg_ratings = self.ratings.values('rating__rating').aggregate(avg_rating=Avg('rating__rating'))['avg_rating']
+        avg_ratings = self.ratings.values('rating__rating').aggregate(
+            avg_rating=Avg('rating__rating'))['avg_rating']
         return avg_ratings
 
 # ------------
 # RATING MODEL
-# ------------  
+# ------------
+
+
 class Rating(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    rating = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
+    rating = models.FloatField(
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)])
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
