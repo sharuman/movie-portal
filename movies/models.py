@@ -57,6 +57,18 @@ class Movie(models.Model):
     def __str__(self):
        return self.title
 
+    def get_actors(self):
+        actors = self.actors.values_list('full_name', flat=True)[:5]
+        return ', '.join(actors)
+
+    def get_directors(self):
+        directors = self.directors.values_list('full_name', flat=True)[:5]
+        return ', '.join(directors)
+
+    def get_genres(self):
+        genres = self.genres.values_list('name', flat=True)[:5]
+        return ', '.join(genres)
+
 # ------------
 # RATING MODEL
 # ------------  
