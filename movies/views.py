@@ -29,6 +29,10 @@ def search(request):
     else:
         return render(request, 'search_results.html', {'movies': results, 'needle': needle})
 
+def movie_details(request):
+    return render(request, 'movie_details.html', {'error': 'Movie not found'})
+
+
 def get_50_movies_with_pictures():  # temporary helper function
     all_movies = Movie.objects.all()
     samples = random.sample(list(all_movies), 200)
