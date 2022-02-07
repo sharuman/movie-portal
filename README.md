@@ -43,6 +43,7 @@ Once the docker containers are running you must follow the steps below in case y
 7. `docker exec django-container python manage.py import_movies -max_rows=1000`. Omit the `max_rows` argument to import all the movies. Pass `--flush` option to empty movies app db tables (except user table).
 8. Create [The Movie Database API](https://developers.themoviedb.org/3/getting-started/introduction). This api key is needed to show movies' posters. Update the `.env` file accordingly.
 9. `docker exec django-container python manage.py get_movie_posters`. The posters will be saved in `static/images/posters` directory.
+10. `docker exec django-container python manage.py set_movie_trailers`
 
 
 ### Django Help
