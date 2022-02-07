@@ -9,7 +9,7 @@
 7. Backoffice:
     - url: http://localhost:8000/admin/
     - username: admin
-    - password: admin
+    - password: 12345
 
 ### Connections
 Complete connection values can be found in the `docker-compose.yml` file.
@@ -47,10 +47,8 @@ Once the docker containers are running you must follow the steps below in case y
 
 ### Django Help
 #### Get rid of app related tables and start over again:
-1. `docker exec django-container python manage.py migrate your_app zero` will drop all the tables related to _your_app_ from the database
-2. remove the migration(s) in the `migrations` directory
-3. `docker exec django-container python manage.py makemigrations your_app` generate the migrations
-4. `docker exec django-container python manage.py migrate your_app` apply the migrations to the database
+1. `docker exec django-container python manage.py migrate --fake your_app zero` will drop all the tables related to _your_app_ from the database
+2. `docker exec django-container python manage.py migrate your_app` apply the migrations to the database
 
 #### Removing all model data: (But keeping the user table)
 `docker exec django-container python manage.py flush_movies`
