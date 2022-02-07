@@ -7,6 +7,8 @@ tqdm==4.62.3
 python-slugify==5.0.2
 requests==2.27.1
 scikit-learn==1.0.2
+names==0.3.0
+numpy~=1.22.1
 
 # tests
 pytest==6.2.5

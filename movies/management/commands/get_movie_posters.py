@@ -11,7 +11,7 @@ from datetime import datetime
 from django.conf import settings
 
 class Command(BaseCommand):
-    help = 'Get movie posters from internet and save them locally'
+    help = 'Get movie posters from the TMDB API and save them locally'
 
     logger = logging.getLogger('command_get_movie_posters')
     logger.info('Import started')
