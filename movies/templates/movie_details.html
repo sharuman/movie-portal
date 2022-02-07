@@ -55,21 +55,12 @@
     <h3 class="font-weight-light text-light">Movies you might like</h3>
     <div class="container py-4">
         <div class="row gy-5">
+            {% for recommendation in recommendations.itertuples %}
             <div class="col">
-                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
+                <!-- <p class="text-light">{{ recommendation.score }}</p> -->
+                <a href="/movies/{{ recommendation.slug }}"><img width="190" src="/{{ recommendation.poster_path }}" class="img-fluid"></a>
             </div>
-            <div class="col">
-                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-            </div>
-            <div class="col">
-                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-            </div>
-            <div class="col">
-                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-            </div>
-            <div class="col">
-                <img width="190" src="/{{ movie.poster_path }}" class="img-fluid">
-            </div>
+            {% endfor %}
         </div>
     </div>
     {% endif %}

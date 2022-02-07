@@ -1,15 +1,7 @@
-from django.core.management.base import BaseCommand, CommandError
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from movies.models import Movie
-
-class Command(BaseCommand):
-    help = 'Movie based recommendation'
-
-    def handle(self, *args, **options):
-        primary_movie_id = Movie.objects.first().id
-        getTfIdfRecommendations(primary_movie_id)
 
 # ---------------------------------------------------------
 # Content-Based recommendation system (Cognitive Filtering)
@@ -51,8 +43,8 @@ def getTfIdfRecommendations(movie_id: int, cut_off: int = 5) -> pd.DataFrame:
     sim_matrix = cosine_similarity(primary_overview_tfidf_matrix, tfidf_matrix).flatten()
     movies_df.insert(movies_df.shape[1], 'score', sim_matrix, allow_duplicates=True)
     recommendations = movies_df.sort_values(by=['score'], ascending=False)[['id', 'title', 'slug', 'poster_path', 'score']]
-    pd.set_option('display.max_columns', None)
-    print(recommendations[1:cut_off+1])
+    
+    return recommendations[1:cut_off+1]
 
 def getMovie(movies: pd.DataFrame, movie_id: int) -> pd.DataFrame:
     """Return movie record in the dataframe.
@@ -73,5 +65,3 @@ def getMovie(movies: pd.DataFrame, movie_id: int) -> pd.DataFrame:
         raise Exception('Movie {} id not found'.format(movie_id))
 
     return movie
-
-# docker exec django-container python manage.py tfidf_strategy

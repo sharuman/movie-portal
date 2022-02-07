@@ -7,6 +7,7 @@ from .forms import SignUpForm
 from movies.models import Movie
 from django.contrib.staticfiles import finders
 from django.contrib.postgres.search import SearchVector
+from .recommendation import getTfIdfRecommendations
 
 def index(request):
     now = datetime.datetime.now()
@@ -30,7 +31,9 @@ def search(request):
 def movie_details(request, slug: str):
     try:
         movie = Movie.objects.get(slug=slug)
-        return render(request, 'movie_details.html', {'movie': movie})
+        recommendations = getTfIdfRecommendations(movie.id)
+        print(recommendations)
+        return render(request, 'movie_details.html', {'movie': movie, 'recommendations': recommendations})
     except Exception as e:
         return render(request, 'movie_details.html', {'error': e})
 
