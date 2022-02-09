@@ -12,11 +12,11 @@
 <div class="container-fluid my-3">
     <h2 class="font-weight-light text-light">Popular movies</h2>
     <div class="row mx-auto my-auto justify-content-center">
-        <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel"  data-bs-interval="10000000">
             <div class="carousel-inner" role="listbox">
                 {% for movie in featured_movie_list %}
                 {% if forloop.first %}
-                <div class="carousel-item active col-5">
+                <div class="carousel-item active col-7" data-bs-interval=false">
                     <div class="card">
                         <div class="card-img">
                             <img src="/{{ movie.poster_path }}" class="img-fluid">
@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 {% else %}
-                <div class="carousel-item col-5">
+                <div class="carousel-item col-7" data-bs-interval=false">
                     <div class="card">
                         <div class="card-img">
                             <img src="/{{ movie.poster_path }}" class="img-fluid">
@@ -34,11 +34,11 @@
                 </div>
                 {% endif %}
                 {% endfor %}
-                <a class="carousel-control-prev bg-transparent w-aut" href="#featuredCarousel" role="button"
+                <a class="carousel-control-prev bg-transparent w-aut" data-bs-target="#featuredCarousel" type="button"
                     data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 </a>
-                <a class="carousel-control-next bg-transparent w-aut" href="#featuredCarousel" role="button"
+                <a class="carousel-control-next bg-transparent w-aut" data-bs-target="#featuredCarousel" type="button"
                     data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </a>
@@ -53,13 +53,13 @@
 
 {% if recommended_movie_list %}
 <div class="container-fluid my-3">
-    <h2 class="font-weight-light text-light">Recommended movies</h2>
+    <h2 class="font-weight-light text-light">Movies you might like</h2>
     <div class="row mx-auto my-auto justify-content-center">
-        <div id="recommendedCarousel" class="carousel slide" data-bs-ride="carousel">
+        <div id="recommendedCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000000">
             <div class="carousel-inner" role="listbox">
                 {% for movie in recommended_movie_list %}
                 {% if forloop.first %}
-                <div class="carousel-item active col-5">
+                <div class="carousel-item active col-7">
                     <div class="card">
                         <div class="card-img">
                             <img src="/{{ movie.poster_path }}" class="img-fluid">
@@ -67,7 +67,7 @@
                     </div>
                 </div>
                 {% else %}
-                <div class="carousel-item col-5">
+                <div class="carousel-item col-7">
                     <div class="card">
                         <div class="card-img">
                             <img src="/{{ movie.poster_path }}" class="img-fluid">
@@ -76,11 +76,11 @@
                 </div>
                 {% endif %}
                 {% endfor %}
-                <a class="carousel-control-prev bg-transparent w-aut" href="#recommendedCarousel" role="button"
+                <a class="carousel-control-prev bg-transparent w-aut" data-bs-target="#recommendedCarousel" type="button"
                     data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                 </a>
-                <a class="carousel-control-next bg-transparent w-aut" href="#recommendedCarousel" role="button"
+                <a class="carousel-control-next bg-transparent w-aut" data-bs-target="#recommendedCarousel" type="button"
                     data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                 </a>
@@ -91,6 +91,90 @@
 
 {% else %}
 <p>No recommended movies found!</p>
+{% endif %}
+
+{% if genre1_movie_list %}
+<div class="container-fluid my-3">
+    <h2 class="font-weight-light text-light">{{genre1_name}}</h2>
+    <div class="row mx-auto my-auto justify-content-center">
+        <div id="genre1Carousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000000">
+            <div class="carousel-inner" role="listbox">
+                {% for movie in genre1_movie_list %}
+                {% if forloop.first %}
+                <div class="carousel-item active col-7">
+                    <div class="card">
+                        <div class="card-img">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="carousel-item col-7">
+                    <div class="card">
+                        <div class="card-img">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <a class="carousel-control-prev bg-transparent w-aut" data-bs-target="#genre1Carousel" type="button"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </a>
+                <a class="carousel-control-next bg-transparent w-aut" data-bs-target="#genre1Carousel" type="button"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<p>No {{genre1_name}} movies found!</p>
+{% endif %}
+
+{% if genre2_movie_list %}
+<div class="container-fluid my-3">
+    <h2 class="font-weight-light text-light">{{genre2_name}}</h2>
+    <div class="row mx-auto my-auto justify-content-center">
+        <div id="genre2Carousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="10000000">
+            <div class="carousel-inner" role="listbox">
+                {% for movie in genre2_movie_list %}
+                {% if forloop.first %}
+                <div class="carousel-item active col-7">
+                    <div class="card">
+                        <div class="card-img">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="carousel-item col-7">
+                    <div class="card">
+                        <div class="card-img">
+                            <img src="/{{ movie.poster_path }}" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <a class="carousel-control-prev bg-transparent w-aut" data-bs-target="#genre2Carousel" type="button"
+                    data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </a>
+                <a class="carousel-control-next bg-transparent w-aut" data-bs-target="#genre2Carousel" type="button"
+                    data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<p>No {{genre2_name}} movies found!</p>
 {% endif %}
 
 {% endblock %}
