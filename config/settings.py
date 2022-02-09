@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-load_dotenv() # loads the configs from .env
+load_dotenv()  # loads the configs from .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'social_django',
     'movies',
 ]
 
@@ -64,6 +65,10 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                
+                # social media login
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -112,6 +117,13 @@ if os.environ.get('GITHUB_WORKFLOW'):
             'PORT': os.environ.get('DB_PORT'),
         }
     }
+
+# Social Media Authentication
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -165,6 +177,10 @@ LOGIN_REDIRECT_URL = '/'
 
 # session lasts for 90 days
 SESSION_COOKIE_AGE = 90 * 24 * 60 * 60
+
+# keys for google authentication
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '509907134312-hip9f4sug5l73u5ncmm0unacnksca0fp.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
 
 LOGGING = {
     'version': 1,
