@@ -1,11 +1,7 @@
-import os
-import random
 from django.shortcuts import render,redirect
-import datetime
 from django.views import View
 from .forms import SignUpForm
 from movies.models import Movie
-from django.contrib.staticfiles import finders
 from django.contrib.postgres.search import SearchVector
 from .recommendation import getTfIdfRecommendations
 
@@ -13,9 +9,9 @@ from .recommendations.user_based_recommender import UserBasedRecommender
 
 
 def index(request):
-    feature_movies = list()
-    recommended_movies = list()
-    genre_movies = dict()
+
+
+    movie_lists=dict()
 
 
     if(request.user.is_authenticated):
@@ -24,28 +20,25 @@ def index(request):
         user_based_recommender = UserBasedRecommender(user_id)
 
         feature_movies = user_based_recommender.get_popular_recommendations(20)  # Get popular movies
+        movie_lists["Popular Movies"] = feature_movies
         feature_movie_ids = list(feature_movies.values_list("id", flat=True))
 
         recommended_movies = user_based_recommender.get_top_recommendations(20,
                                                                             feature_movie_ids)  # Get recommended movies that are not already in featured movies
+        movie_lists["Movies you might like"] = recommended_movies
         recommended_movie_ids = list(recommended_movies.values_list("id", flat=True))
         feature_movie_ids.extend(recommended_movie_ids)
 
         genre_movies = user_based_recommender.get_genre_recommendations(10, 2,
                                                                         feature_movie_ids)  # Get recommendations based on the users favorite genre
-    else:
-        genre_movies["genre1"] = list()
-        genre_movies["genre2"] = list()
 
-    keys = list(genre_movies.keys())
+        for genre, movies_list in genre_movies.items():
+            movie_lists["Because you like " + genre] = movies_list
+    else:
+        pass
 
     return render(request, 'index.html', {
-        'featured_movie_list': feature_movies,
-        'recommended_movie_list': recommended_movies,
-        'genre1_name': keys[0],
-        'genre1_movie_list': genre_movies[keys[0]],
-        'genre2_name': keys[1],
-        'genre2_movie_list': genre_movies[keys[1]]
+        'movie_lists': movie_lists
     })
 
 def search(request):
@@ -67,29 +60,6 @@ def movie_details(request, slug: str):
         return render(request, 'movie_details.html', {'movie': movie, 'recommendations': recommendations})
     except Exception as e:
         return render(request, 'movie_details.html', {'error': e})
-
-
-def get_50_movies_with_pictures():  # temporary helper function
-    all_movies = Movie.objects.all()
-    samples = random.sample(list(all_movies), 200)
-    valid_samples = list()
-
-    basePath = finders.find("images/posters")
-
-    for sample in samples:
-        fullPath = os.path.join(basePath, str(sample.id) + ".jpg")
-        if (os.path.exists(fullPath)):
-            valid_samples.append(sample)
-            if (len(valid_samples) >= 50):
-                return valid_samples
-
-
-def get_features_movies() -> list[Movie]:
-    return get_50_movies_with_pictures()
-
-
-def get_recommended_movies() -> list[Movie]:
-    return get_50_movies_with_pictures()
 
 
 class SignUpView(View):
