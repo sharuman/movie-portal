@@ -12,20 +12,30 @@ from .recommendations.user_based_recommender import UserBasedRecommender
 
 
 def index(request):
+    feature_movies = list()
+    recommended_movies = list()
+    genre_movies = dict()
 
-    user_id = 1
-    user_based_recommender = UserBasedRecommender(user_id)
 
-    feature_movies = user_based_recommender.get_popular_recommendations(20)  # Get popular movies
-    feature_movie_ids = list(feature_movies.values_list("id", flat=True))
+    if(request.user.is_authenticated):
+        user_id = request.user.id
 
-    recommended_movies = user_based_recommender.get_top_recommendations(20,
-                                                                        feature_movie_ids)  # Get recommended movies that are not already in featured movies
-    recommended_movie_ids = list(recommended_movies.values_list("id", flat=True))
-    feature_movie_ids.extend(recommended_movie_ids)
+        user_based_recommender = UserBasedRecommender(user_id)
 
-    genre_movies = user_based_recommender.get_genre_recommendations(10, 2,
-                                                                    feature_movie_ids)  # Get recommendations based on the users favorite genre
+        feature_movies = user_based_recommender.get_popular_recommendations(20)  # Get popular movies
+        feature_movie_ids = list(feature_movies.values_list("id", flat=True))
+
+        recommended_movies = user_based_recommender.get_top_recommendations(20,
+                                                                            feature_movie_ids)  # Get recommended movies that are not already in featured movies
+        recommended_movie_ids = list(recommended_movies.values_list("id", flat=True))
+        feature_movie_ids.extend(recommended_movie_ids)
+
+        genre_movies = user_based_recommender.get_genre_recommendations(10, 2,
+                                                                        feature_movie_ids)  # Get recommendations based on the users favorite genre
+    else:
+        genre_movies["genre1"] = list()
+        genre_movies["genre2"] = list()
+
     keys = list(genre_movies.keys())
 
     return render(request, 'index.html', {
