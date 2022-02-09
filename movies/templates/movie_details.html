@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %} Movie Details {% endblock %}
+
+{% block body %}
+
+<div class="container">
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-sm-5 col-md-6">
+            <div class="card-img">
+                <img src="/{{ movie.poster_path }}" class="img-fluid">
+            </div>
+            {%if user.is_authenticated %}
+            <input id="input-1" name="input-1" class="rating rating-loading" data-min="0" data-max="5" data-step="0.5">
+            {% else %}
+            <input id="input-6" name="input-6" class="rating rating-loading" value="{{ movie.get_avg_ratings }}"
+                data-min="0" data-max="5" data-step="0.5" data-readonly="true">
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            <h1 class="font-weight-light text-light">{{ movie.title }}</h1>
+            <div class="text-light">
+                <p class="fw-bold">Released on</p>
+                <p>{{ movie.released_on|date:'d-m-Y' }}</p>
+            </div>
+            <div class="text-light">
+                <p class="fw-bold">Genres</p>
+                <p>{{ movie.get_genres }}</p>
+            </div>
+            <div class="text-light">
+                <p class="fw-bold">Actors</p>
+                <p>{{ movie.get_actors }}</p>
+            </div>
+            <div class="text-light">
+                <p class="fw-bold">Directors</p>
+                <p>{{ movie.get_directors }}</p>
+            </div>
+            <div class="text-light">
+                <p class="fw-bold">Plot</p>
+                <p class="text-wrap">{{ movie.plot|truncatechars:300 }}</p>
+            </div>
+            <div class="text-light">
+                <p class="fw-bold">Trailer</p>
+                <div class="ratio ratio-16x9">
+                    <iframe src="{{ movie.trailer }}" title="YouTube video" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3 class="font-weight-light text-light">Movies you might like</h3>
+    <div class="container py-4">
+        <div class="row gy-5">
+            {% for recommendation in recommendations.itertuples %}
+            <div class="col">
+                <!-- <p class="text-light">{{ recommendation.score }}</p> -->
+                <a href="/movies/{{ recommendation.slug }}"><img width="190" src="/{{ recommendation.poster_path }}" class="img-fluid"></a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

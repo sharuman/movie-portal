@@ -28,5 +28,5 @@ urlpatterns = [
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('search/', views.search, name='search_results'),
     path('oauth/', include('social_django.urls', namespace='social')),
-
+    path('movies/<slug:slug>', views.movie_details, name='movie_details')
 ]

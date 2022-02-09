@@ -229,12 +229,12 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/command_set_movie_trailers.log',
+            'filename': BASE_DIR / 'logs/command_set_movies_trailer.log',
             'formatter': 'simple',
         },
     },
     'loggers': {
-        'command_set_movie_trailers': {
+        'command_set_movies_trailer': {
             'handlers': ['file'],
             'level': 'INFO',
             'propagate': True,

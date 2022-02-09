@@ -7,8 +7,8 @@ from movies.models import Movie
 from datetime import datetime
 
 class Command(BaseCommand):
-    help = 'Get movie trailers from the TMDB API and save them on the db'
-    logger = logging.getLogger('command_set_movie_trailers')
+    help = 'Get movies trailer from the TMDB API and save them on the db'
+    logger = logging.getLogger('command_set_movies_trailer')
 
     def handle(self, *args, **kwargs):
         ids = Movie.objects.filter(trailer__isnull=True).values_list('id', flat=True)
@@ -40,7 +40,7 @@ class Command(BaseCommand):
             data = requests.get(url)
             data = data.json()
             video_id = data['results'][0]['key']
-            trailer_url = 'https://www.youtube.com/watch?v={}'.format(video_id)
+            trailer_url = 'https://www.youtube.com/embed/{}'.format(video_id)
 
             movie = Movie.objects.get(id=movie_id)
             movie.trailer = trailer_url
@@ -52,4 +52,4 @@ class Command(BaseCommand):
             print(e)
             self.logger.error('Error while getting trailer for movie id {}'.format(movie_id))
 
-# python manage.py set_movie_trailers
+# python manage.py set_movies_trailer
