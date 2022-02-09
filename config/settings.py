@@ -180,7 +180,7 @@ SESSION_COOKIE_AGE = 90 * 24 * 60 * 60
 
 # keys for google authentication
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = str(os.getenv('GOOGLE_KEY'))
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv('GOOGLE_KEY'))
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv('GOOGLE_SECRET'))
 
 LOGGING = {
     'version': 1,
