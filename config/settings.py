@@ -179,8 +179,8 @@ LOGIN_REDIRECT_URL = '/'
 SESSION_COOKIE_AGE = 90 * 24 * 60 * 60
 
 # keys for google authentication
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '509907134312-hip9f4sug5l73u5ncmm0unacnksca0fp.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = str(os.getenv('GOOGLE_KEY'))
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv('GOOGLE_KEY'))
 
 LOGGING = {
     'version': 1,
