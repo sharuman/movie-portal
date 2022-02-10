@@ -6,7 +6,7 @@ from movies.models import Movie, Genre, Rating
 class UnspecificRecommender:
     def __init__(self, popular_movie_date_threshhold="2010-01-01"):
         self.popular_movie_date_threshhold = popular_movie_date_threshhold
-        self.aggregated_ratings = Rating.objects.annotate(rating_count=Count("movie"))
+        self.aggregated_ratings = Rating.objects.filter(rating__gt=4).annotate(rating_count=Count("movie"))
 
     def get_popular_recommendations(self,num_recommendations,already_suggested_movie_ids=list()):#Get popular movies for user
 
