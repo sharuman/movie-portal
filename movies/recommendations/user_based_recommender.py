@@ -1,4 +1,4 @@
-
+import copy
 from math import sqrt
 from django.db.models import QuerySet, Avg, Count, Sum
 from django.contrib.auth.models import User
@@ -37,7 +37,7 @@ class UserBasedRecommender:
         return self.get_movies_from_similar_users(similarities, num_recommendations,already_suggested_movie_ids)
 
     # Get the users favorite genres and recommend popular movies from there
-    def get_genre_recommendations(self,num_recommendations,num_genres,already_suggested_movie_ids=list()) -> dict[str, QuerySet[Movie]]:
+    def get_genre_recommendations(self,num_recommendations,num_genres,already_suggested_movie_ids_original=list()) -> dict[str, QuerySet[Movie]]:
 
         genres=dict.fromkeys(Genre.objects.values_list("id", flat=True), 0)
         for movie in self.rated_movies:
@@ -46,6 +46,7 @@ class UserBasedRecommender:
 
         top_genres = self.get_top_x_dict(genres, num_genres, True)
 
+        already_suggested_movie_ids = copy.deepcopy(already_suggested_movie_ids_original)
         results = dict()
         for genre_id in top_genres.keys():
             genre_movies = self.other_movies.filter(genres__id=genre_id)

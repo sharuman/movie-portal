@@ -8,6 +8,10 @@
 
 {% block body %}
 
+{% if not request.user.is_authenticated %}
+     <h1 class="font-weight-light text-light">You are not logged in. Log in to get personalized movie suggestions.</h1>
+{% endif %}
+
 {% for description,movie_list in movie_lists.items %}
     <div class="container-fluid my-3">
         <h2 class="font-weight-light text-light">{{description}}</h2>
