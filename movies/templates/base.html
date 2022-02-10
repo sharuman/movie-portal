@@ -54,6 +54,9 @@
                 <li>
                     <a class="nav-link" href="{% url 'logout' %}"><span class="fas fa-user"></span> Logout </a>
                 </li>
+                <li>
+                    <a class="nav-link" href="{% url 'user_profile' %}"><span class="fas fa-user"></span> Profile </a>
+                </li>
                 {% else %}
                 <li>
                     <a class="nav-link" href="{% url 'login' %}"><span class="fas fa-sign-in-alt"></span> Login</a>
