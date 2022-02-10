@@ -1,6 +1,6 @@
 import copy
 from math import sqrt
-from django.db.models import QuerySet, Avg, Count, Sum
+from django.db.models import QuerySet, Avg, Count, Sum, Q
 from django.contrib.auth.models import User
 from movies.models import Rating, Movie, Genre
 
@@ -16,9 +16,9 @@ class UserBasedRecommender:
         self.ratings= Rating.objects.filter(user=user_id)
         self.rated_movie_ids =self.ratings.values_list("movie", flat=True)
         self.rated_movies = Movie.objects.filter(id__in=self.rated_movie_ids)
-        self.aggregated_ratings = Rating.objects.annotate(rating_count=Count("movie"))
+        self.aggregated_ratings = Rating.objects.filter(rating__gt=4).annotate(rating_count=Count("movie"))
         self.other_movies = Movie.objects.exclude(id__in=self.rated_movie_ids)
-        self.other_ratings=Rating.objects.exclude(movie__in=self.rated_movie_ids)
+        self.other_ratings=Rating.objects.filter(rating__gt=4).exclude(movie__in=self.rated_movie_ids)
 
     def get_popular_recommendations(self,num_recommendations,already_suggested_movie_ids=list()):#Get popular movies for user
 
