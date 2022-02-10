@@ -6,8 +6,11 @@ pandas==1.4.0
 tqdm==4.62.3
 python-slugify==5.0.2
 requests==2.27.1
+scikit-learn==1.0.2
 names==0.3.0
 Pillow==9.0.1
+social-auth-app-django==5.0.0
+numpy~=1.22.1
 
 # tests
 pytest==6.2.5
@@ -17,4 +20,6 @@ pytest-django==4.1.0
 # lint
 black==20.8b1
 
-numpy~=1.22.1
+# GET package version
+# docker container list  
+# docker exec <django container ID> pip list    
