@@ -84,11 +84,9 @@ class ObjectCreator:
     def create_genre_objects(self, genres: dict[int, str]) -> dict[int, Genre]:
         genre_objs = dict()
 
-        i = 0
         for id, name in genres.items():
             obj = Genre(id=id, name=name, slug=slugify(name))
             genre_objs[id] = obj
-            i += 1
 
         return genre_objs
 
@@ -96,7 +94,6 @@ class ObjectCreator:
         genre_relations = list()
         actor_relations = list()
         director_relations = list()
-        i = 0
 
         for _, row in movies.iterrows():
             movie = movie_objects[row["id"]]
@@ -106,7 +103,6 @@ class ObjectCreator:
                 actor_relations.append(movie.actors.through(persona_id=id, movie_id=movie.id))
             for id in row["crew"].keys():
                 director_relations.append(movie.directors.through(persona_id=id, movie_id=movie.id))
-            i += 1
 
         return genre_relations, actor_relations, director_relations
 
