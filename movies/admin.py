@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Genre, Persona, Rating
+from .models import Genre, Persona, Rating, UserProfile
 from .models import Movie
 
 # ----------------
@@ -28,6 +28,12 @@ class GenreAdmin(admin.ModelAdmin):
 class RatingAdmin(admin.ModelAdmin):
     list_display = ('movie', 'user', 'rating', 'created_at', 'updated_at')
 
+
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'created_at', 'updated_at')
+
+
+
 # ------------------
 # Model Registration
 # ------------------   
@@ -35,3 +41,4 @@ admin.site.register(Movie, MovieAdmin)
 admin.site.register(Persona, PersonaAdmin)
 admin.site.register(Genre, GenreAdmin)
 admin.site.register(Rating, RatingAdmin)
+admin.site.register(UserProfile, UserProfileAdmin)

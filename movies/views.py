@@ -1,8 +1,16 @@
+import os
+import random
+from django.shortcuts import render, redirect
+import datetime
 from django.shortcuts import render,redirect
 from django.views import View
 from .forms import SignUpForm
 from movies.models import Movie, Genre
 from django.contrib.postgres.search import SearchVector
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+from .forms import UserProfileForm
 from .recommendation import getTfIdfRecommendations
 from .recommendations.unspecific_recommender import UnspecificRecommender
 
@@ -79,7 +87,6 @@ def movie_details(request, slug: str):
     except Exception as e:
         return render(request, 'movie_details.html', {'error': e})
 
-
 class SignUpView(View):
     form_class = SignUpForm
     initial = {'key': 'value'}
@@ -97,3 +104,17 @@ class SignUpView(View):
             return redirect(to='/')
         else:
             return render(request, self.template_name, {'form': form})
+
+@login_required
+def user_profile(request):
+    if request.method == 'POST':
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
+
+        if profile_form.is_valid():
+            profile_form.save()
+            messages.success(request, 'Your profile has been updated!')
+            return redirect(to='profile')
+    else:
+        profile_form = UserProfileForm(instance=request.user.userprofile)
+
+    return render(request, 'user_profile.html', {'profile_form': profile_form, 'error': 'Profile does not exist.'})

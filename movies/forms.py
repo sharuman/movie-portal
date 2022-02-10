@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 
+from .models import UserProfile
 
 class LoginForm(AuthenticationForm):
 
@@ -67,3 +68,13 @@ class SignUpForm(UserCreationForm):
         # built-in User model
         model = User
         fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
+
+
+class UserProfileForm(forms.ModelForm):
+    image = forms.ImageField(widget=forms.FileInput(attrs={'class': 'form-control-file'}))
+    biography = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}))
+    fav_genre = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3}))
+    class Meta:
+        model = UserProfile
+        fields = ['image', 'biography']
+
