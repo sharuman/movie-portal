@@ -30,28 +30,28 @@ def index(request):
     if(request.user.is_authenticated):
         user_id = request.user.id
 
-        # if(user_id in recommendation_cache):
-        #     movie_lists = recommendation_cache[user_id]
-        # else:
-        user_based_recommender = UserBasedRecommender(user_id)
+        if(user_id in recommendation_cache):
+            movie_lists = recommendation_cache[user_id]
+        else:
+            user_based_recommender = UserBasedRecommender(user_id)
 
-        feature_movies = user_based_recommender.get_popular_recommendations(num_recommendations)  # Get popular movies
-        movie_lists["Popular Movies"] = feature_movies
-        feature_movie_ids = list(feature_movies.values_list("id", flat=True))
+            feature_movies = user_based_recommender.get_popular_recommendations(num_recommendations)  # Get popular movies
+            movie_lists["Popular Movies"] = feature_movies
+            feature_movie_ids = list(feature_movies.values_list("id", flat=True))
 
-        recommended_movies = user_based_recommender.get_top_recommendations(num_recommendations,
-                                                                            feature_movie_ids)  # Get recommended movies that are not already in featured movies
-        movie_lists["Users like you like these movies"] = recommended_movies
-        recommended_movie_ids = list(recommended_movies.values_list("id", flat=True))
-        feature_movie_ids.extend(recommended_movie_ids)
+            recommended_movies = user_based_recommender.get_top_recommendations(num_recommendations,
+                                                                                feature_movie_ids)  # Get recommended movies that are not already in featured movies
+            movie_lists["Users like you like these movies"] = recommended_movies
+            recommended_movie_ids = list(recommended_movies.values_list("id", flat=True))
+            feature_movie_ids.extend(recommended_movie_ids)
 
-        genre_movies = user_based_recommender.get_genre_recommendations(num_recommendations, 2,
-                                                                        feature_movie_ids)  # Get recommendations based on the users favorite genre
+            genre_movies = user_based_recommender.get_genre_recommendations(num_recommendations, 2,
+                                                                            feature_movie_ids)  # Get recommendations based on the users favorite genre
 
-        for genre, movies_list in genre_movies.items():
-            movie_lists["Because you like " + genre] = movies_list
+            for genre, movies_list in genre_movies.items():
+                movie_lists["Because you like " + genre] = movies_list
 
-        recommendation_cache[user_id] = movie_lists
+            recommendation_cache[user_id] = movie_lists
 
     else:
         unspecific_recommender = UnspecificRecommender()
