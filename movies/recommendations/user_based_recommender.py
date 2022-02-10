@@ -6,10 +6,10 @@ from movies.models import Rating, Movie, Genre
 
 
 class UserBasedRecommender:
-    def __init__(self, user_id: int):
-        self.movies_in_common_threshhold=5#TODO:Increase later
-        self.similar_user_amount=20
-        self.popular_movie_date_threshhold="2010-01-01"
+    def __init__(self, user_id: int,movies_in_common_threshhold=5, similar_user_amount=20, popular_movie_date_threshhold="2010-01-01"):
+        self.movies_in_common_threshhold = movies_in_common_threshhold
+        self.similar_user_amount = similar_user_amount
+        self.popular_movie_date_threshhold=popular_movie_date_threshhold
 
         #Only calculate this data one time (instead of multiple times) to save computation time
         self.user_id=user_id
@@ -39,14 +39,14 @@ class UserBasedRecommender:
     # Get the users favorite genres and recommend popular movies from there
     def get_genre_recommendations(self,num_recommendations,num_genres,already_suggested_movie_ids=list()) -> dict[str, QuerySet[Movie]]:
 
-        genres=dict.fromkeys(Genre.objects.values_list("id",flat=True),0)
+        genres=dict.fromkeys(Genre.objects.values_list("id", flat=True), 0)
         for movie in self.rated_movies:
             for genre in movie.genres.all():
                 genres[genre.id] += 1
 
-        top_genres = self.get_top_x_dict(genres, num_genres)
+        top_genres = self.get_top_x_dict(genres, num_genres, True)
 
-        results=dict()
+        results = dict()
         for genre_id in top_genres.keys():
             genre_movies = self.other_movies.filter(genres__id=genre_id)
             if (len(already_suggested_movie_ids) > 0):
