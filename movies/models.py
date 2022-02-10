@@ -1,6 +1,9 @@
+from pyexpat import model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.contrib.auth.models import User
+
+from PIL import Image
 
 # -------------
 # PERSONA MODEL
@@ -71,3 +74,31 @@ class Rating(models.Model):
     class Meta:
         # A user can rate a movie only once
         unique_together = (('movie', 'user'))
+
+# ------------
+# User Profile MODEL (Extension of the User model)
+# ------------
+
+class UserProfile(models.Model):
+    image = models.ImageField(default='static/images/default.jpg', upload_to='static/images/profile_images')
+    biography = models.TextField(blank=True, null=True)
+    fav_genre = models.TextField(blank=True, null=True)
+
+    # one to one relationship
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        super().save()
+
+        img = Image.open(self.image.path)
+
+        if img.height > 100 or img.width > 100:
+            resized_img = (100, 100)
+            img.thumbnail(resized_img)
+            img.save(self.image.path)
+
+    def __str__(self):
+        return self.user.username

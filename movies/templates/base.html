@@ -48,7 +48,7 @@
             </form>
 
             <ul class="navbar-nav ms-auto ps-5">
-                {% if user.is_authenitcated %}
+                {% if user.is_authenticated %}
                 <li>
                     <a class="nav-link" href="{% url 'logout' %}"><span class="fas fa-user"></span> Logout </a>
                 </li>

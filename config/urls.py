@@ -19,6 +19,7 @@ from movies import views
 from movies.forms import LoginForm
 from django.contrib.auth import views as auth_views
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
@@ -27,4 +28,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(template_name='logout.html'), name='logout'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('search/', views.search, name='search_results'),
+    path('profile/', views.user_profile, name='user_profile'),
 ]
+
