@@ -19,7 +19,7 @@
           {% for movie in movies %}
             <div class="col">
                 <div class="card shadow-sm" style="width: 18rem;">
-                  <a href="#">
+                  <a href="/movies/{{movie.slug}}">
                     <img class="card-img-top" src="/{{ movie.poster_path }}" alt="{{ movie.title }}" width="100">
                   </a>
                 <div class="card-body">
