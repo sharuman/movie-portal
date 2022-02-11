@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %} Home {% endblock %}
+
+{% block section_title %} Home {% endblock %}
+
+{% block body %}
+
+{% if not request.user.is_authenticated %}
+     <h1 class="font-weight-light text-light">You are not logged in. Log in to get personalized movie suggestions.</h1>
+{% endif %}
+
+{% for description,movie_list in movie_lists.items %}
+    <div class="container-fluid my-3">
+        <h2 class="font-weight-light text-light">{{description}}</h2>
+        <div class="row mx-auto my-auto justify-content-center">
+
+            {% if movie_list %}
+                {% load str_filters %}
+                {% with "carousel"|addstr:forloop.counter as carouselId %}
+
+                <div id="{{carouselId}}" class="carousel slide" data-bs-ride="carousel"  data-bs-interval="10000000">
+                    <div class="carousel-inner" role="listbox">
+                        {% for movie in movie_list %}
+
+                                <div class="carousel-item col-7 {% if forloop.first %}active{% endif %}" data-bs-interval=false">
+                                    <a href="/movies/{{movie.slug}}">
+                                        <div class="card">
+                                            <div class="card-img">
+                                                <img src="/{{ movie.poster_path }}" class="img-fluid">
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+
+                        {% endfor %}
+                        <a class="carousel-control-prev bg-transparent w-aut" data-bs-target="#{{carouselId}}" type="button"
+                            data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        </a>
+                        <a class="carousel-control-next bg-transparent w-aut" data-bs-target="#{{carouselId}}" type="button"
+                            data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                </div>
+                {% endwith %}
+
+            {% else %}
+                <p class="font-weight-light text-light">No movies found!</p>
+            {% endif %}
+        </div>
+    </div>
+
+{% endfor %}
+
+{% endblock %}

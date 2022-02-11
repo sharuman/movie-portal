@@ -1,9 +1,0 @@
-name: ase_movies
-channels:
-  - conda-forge
-  - defaults
-
-dependencies:
-  - python=3.9.6
-  - django=3.2.8
-  

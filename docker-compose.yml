@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+
+  postgres:
+    hostname: ${DB_HOSTNAME}
+    restart: always
+    image: postgres
+    container_name: postgres-container
+    ports:
+      - "5432:${DB_PORT}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  django:
+    build: .
+    container_name: django-container
+    command: bash -c "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_DOCKER=1
+    depends_on:
+      - postgres
+    volumes:
+      - .:/code
+      
+  pgadmin:
+      image: dpage/pgadmin4
+      container_name: pgadmin-container
+      depends_on:
+        - postgres
+      ports:
+        - "5051:80"
+      environment:
+        PGADMIN_DEFAULT_EMAIL: pgadmin4@pgadmin.org
+        PGADMIN_DEFAULT_PASSWORD: root
+      restart: always
+
+volumes:
+  postgres_data:

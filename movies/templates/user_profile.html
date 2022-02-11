@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %} Your Profile {% endblock %}
+
+{% block body %}
+
+
+
+<div class="form-content my-2 p-2">
+
+    <div class="container">
+        <div class="row justify-content-center">
+
+            <div class="col col-lg-6">
+                <div class="my-3 p-3">
+                    <img class="rounded-circle account-img" src="{{ user.userprofile.image.url }}" />
+                </div>
+                <div class="card shadow-lg border-0 rounded-lg mt-3 mb-3">
+                    <div class="card-header justify-content-center">
+                        <h3 class="my-4 text-center"><strong> Your Profile </strong></h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {% if form.errors %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                <div id="form_errors">
+                                    {% for _, value in form.errors.items %}
+                                    <strong>{{ value }}</strong>
+                                    {% endfor %}
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                            </div>
+                            {% endif %}
+
+                            <div class="form-row">
+                                <div class="col-md-5">
+                                    <div class="form-row">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="m-2"><strong>Username</strong></label>
+                                                <div>{{ user.username }}</div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="m-2"><strong>Email Address</strong></label>
+                                                <div>{{ user.email }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="m-2"><strong>Change Profile Photo</strong></label>
+                                        {{ profile_form.image }}
+                                    </div>
+                                    <label class="m-2"><strong>Bio</strong></label> {{ profile_form.biography }}
+                                </div>
+                            </div>
+                            <hr>
+                            <button type="submit" class="btn btn-dark btn-md">Save Changes</button>
+                            <button type="reset" class="btn btn-dark btn-md">Reset</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
