@@ -23,7 +23,7 @@
                     <img class="card-img-top" src="/{{ movie.poster_path }}" alt="{{ movie.title }}" width="100">
                   </a>
                 <div class="card-body">
-                  <h6 class="card-title"><a href="#">{{ movie.title }}</a></h6>
+                  <h6 class="card-title"><a href="/movies/{{movie.slug}}">{{ movie.title }}</a></h6>
                   <p class="card-text">
                     {{ movie.plot|truncatechars:150 }}
                   </p>
