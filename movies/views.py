@@ -25,6 +25,7 @@ def index(request):
 
     movie_lists=dict()
 
+    num_recommendations = 20
 
     if(request.user.is_authenticated):
         user_id = request.user.id
@@ -34,17 +35,17 @@ def index(request):
         else:
             user_based_recommender = UserBasedRecommender(user_id)
 
-            feature_movies = user_based_recommender.get_popular_recommendations(20)  # Get popular movies
+            feature_movies = user_based_recommender.get_popular_recommendations(num_recommendations)  # Get popular movies
             movie_lists["Popular Movies"] = feature_movies
             feature_movie_ids = list(feature_movies.values_list("id", flat=True))
 
-            recommended_movies = user_based_recommender.get_top_recommendations(20,
+            recommended_movies = user_based_recommender.get_top_recommendations(num_recommendations,
                                                                                 feature_movie_ids)  # Get recommended movies that are not already in featured movies
-            movie_lists["Movies you might like"] = recommended_movies
+            movie_lists["Users like you like these movies"] = recommended_movies
             recommended_movie_ids = list(recommended_movies.values_list("id", flat=True))
             feature_movie_ids.extend(recommended_movie_ids)
 
-            genre_movies = user_based_recommender.get_genre_recommendations(10, 2,
+            genre_movies = user_based_recommender.get_genre_recommendations(num_recommendations, 2,
                                                                             feature_movie_ids)  # Get recommendations based on the users favorite genre
 
             for genre, movies_list in genre_movies.items():
@@ -54,12 +55,12 @@ def index(request):
 
     else:
         unspecific_recommender = UnspecificRecommender()
-        feature_movies = unspecific_recommender.get_popular_recommendations(20)  # Get popular movies
+        feature_movies = unspecific_recommender.get_popular_recommendations(num_recommendations)  # Get popular movies
         movie_lists["Popular Movies"] = feature_movies
         feature_movie_ids = list(feature_movies.values_list("id", flat=True))
 
         for genre in Genre.objects.all()[:3]:
-            genre_movies = unspecific_recommender.get_genre_recommendations(genre.id, 20, feature_movie_ids)  # Get recommendations based on the users favorite genre
+            genre_movies = unspecific_recommender.get_genre_recommendations(genre.id, num_recommendations, feature_movie_ids)  # Get recommendations based on the users favorite genre
             movie_lists[genre.name] = genre_movies
             feature_movie_ids.extend(list(genre_movies.values_list("id", flat=True)))
 

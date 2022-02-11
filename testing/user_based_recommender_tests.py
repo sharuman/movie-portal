@@ -1,7 +1,9 @@
 import pandas as pd
 import pytest
+from django.db.models import Avg
 
 from movies.management.commands.import_utils.object_creation import ObjectCreator
+from movies.models import Movie
 from movies.recommendations.user_based_recommender import UserBasedRecommender
 
 
@@ -49,22 +51,28 @@ def add_mock_data_to_db():
 
 @pytest.mark.django_db(transaction=True)
 def test_popular_movies():
+    movie_count=1
     add_mock_data_to_db()
-    user_based_recommender=UserBasedRecommender(1)
-    recommendations = user_based_recommender.get_popular_recommendations(1)
+    user_based_recommender = UserBasedRecommender(1)
+    recommendations = user_based_recommender.get_popular_recommendations(movie_count)
+    assert len(recommendations) == movie_count #Right amount of output movies
     assert recommendations[0].id == 1 #Most popular movie in dataset is avatar, it should be avatar
 
 
 @pytest.mark.django_db(transaction=True)
 def test_recommended_movies():
+    movie_count = 1
     add_mock_data_to_db()
     user_based_recommender = UserBasedRecommender(1,movies_in_common_threshhold=1)
-    recommendations = user_based_recommender.get_top_recommendations(1)
+    recommendations = user_based_recommender.get_top_recommendations(movie_count)
+    assert len(recommendations) == movie_count
     assert recommendations[0].id == 1 #Most popular movie in dataset is avatar, it should be avatar
 
 @pytest.mark.django_db(transaction=True)
 def test_genre_movies():
+    movie_count = 1
     add_mock_data_to_db()
     user_based_recommender = UserBasedRecommender(1,movies_in_common_threshhold=1)
-    recommendations = user_based_recommender.get_genre_recommendations(1, 1)
+    recommendations = user_based_recommender.get_genre_recommendations(movie_count, 1)
+    assert len(recommendations) == movie_count
     assert recommendations["Adventure"][:1].get().id == 2 #Most popular movie in dataset is avatar, it should be avatar
